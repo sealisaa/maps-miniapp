@@ -1,0 +1,13 @@
+.map-container {
+    width: 600px;
+    height: 400px;
+}
+
+.Button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.places-container {
+    margin-left: 10px;
+}
