@@ -1,0 +1,36 @@
+.btn {
+  margin-top: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+table td {
+  border: 1px solid black;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+}
+
+.panel {
+	padding: 10px;
+}
+
+.color {
+	background-color: #EDEEF0;
+}
+
+.map-container {
+    width: 600px;
+    height: 400px;
+}
+
+.Button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.basic-container {
+    margin-left: 10px;
+}

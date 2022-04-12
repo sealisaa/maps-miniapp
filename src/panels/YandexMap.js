@@ -1,11 +1,11 @@
 import React from 'react';
 import { Panel, Button } from '@vkontakte/vkui';
-import './YandexMap.css';
+import './style.css';
 
 const PlacesList = ({places}) => {
     var arr = Array.from(places.keys());
     return (
-        <div className="places-container">
+        <div className="basic-container">
             {arr.map((k) => {
                 return (
                     <p id={k}>{k}</p>

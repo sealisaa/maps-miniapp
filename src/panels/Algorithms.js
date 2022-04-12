@@ -1,7 +1,7 @@
 import React from 'react';
 import { Panel, PanelHeader, Header, Button, Group, Div, FormItem, Select } from '@vkontakte/vkui';
 import data from '../data.json';
-import './Home.css';
+import './style.css';
 import m from '../matrix.json';
 
 var graph = m.matrix; // матрица смежности
