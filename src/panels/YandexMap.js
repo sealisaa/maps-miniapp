@@ -8,7 +8,7 @@ const PlacesList = ({places}) => {
         <div className="basic-container">
             {arr.map((k) => {
                 return (
-                    <p id={k}>{k}</p>
+                    <p key={k}>{k}</p>
                 )
             })}
         </div>
