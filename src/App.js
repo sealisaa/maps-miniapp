@@ -3,19 +3,18 @@ import bridge from '@vkontakte/vk-bridge';
 import { View, ScreenSpinner, AdaptivityProvider, AppRoot } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
 
-import YandexMap from './panels/YandexMap';
+import MainMap from './panels/MainMap';
 import ResultRoute from './panels/ResultRoute';
 
 const ROUTES = {
-	YANDEXMAP: 'yandexMap',
+	MAINMAP: 'mainMap',
 	RESULTROUTE: 'resultRoute'
 }
 
 var chosenPlaces = new Map();
 
 const App = () => {
-	const [activePanel, setActivePanel] = useState(ROUTES.YANDEXMAP);
-	const [fetchedUser, setUser] = useState(null);
+	const [activePanel, setActivePanel] = useState(ROUTES.MAINMAP);
 
 	useEffect(() => {
 		bridge.subscribe(({ detail: { type, data }}) => {
@@ -36,7 +35,7 @@ const App = () => {
 		<AdaptivityProvider>
 			<AppRoot>
 				<View activePanel={activePanel}>
-					<YandexMap id={ROUTES.YANDEXMAP} go={go} />
+					<MainMap id={ROUTES.MAINMAP} go={go} />
 					<ResultRoute id={ROUTES.RESULTROUTE} places={chosenPlaces} />
 				</View>
 			</AppRoot>

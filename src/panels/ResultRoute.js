@@ -2,19 +2,15 @@ import React from 'react';
 import { Panel } from '@vkontakte/vkui';
 import './style.css';
 
-
-var distances = []; //матрица смежности
+var distances = [];
 var arrKeys;
 var arrValues;
-var path = []; // маршрут
-var pathLength; // длина маршрута
+var path = [];
+var pathLength;
 var sumPathLength = 0;
-
-// метод ближайшего соседа
-
-var visited = []; // посещена ли вершина или нет
-var currentPath = []; // текущий маршрут
-var currentPathLength; // текущая длина маршрута
+var visited = [];
+var currentPath = [];
+var currentPathLength;
 
 function GreedyAlgorithmStart() {
 	for (let i = 0; i < distances.length; i++) {
@@ -52,7 +48,7 @@ function GreedyAlgorithm(i) {
 	}
 }
 
-function isAllVisited() { // посещены ли все вершины
+function isAllVisited() {
 	for (let i = 0; i < visited.length; i++) {
 		if (!visited[i]) {
 			return false;
@@ -70,7 +66,6 @@ function getDistances(places) {
             distances[i][j] = -1;
         }
     }
-    //расстояния в обе стороны могут быть разные, надо потом это учесть
     for (var i = 0; i < arrKeys.length; i++) {
         for (var j = i + 1; j < arrKeys.length; j++) {
             distances[i][j] = ymaps.coordSystem.geo.getDistance(arrValues[i], arrValues[j]);
@@ -86,8 +81,8 @@ class ResultRoute extends React.Component {
 		this.init = this.init.bind(this);
 		var places = this.props.places;
 		getDistances(places);
-        pathLength = sumPathLength; // длина маршрута
-        GreedyAlgorithmStart(); // вызов метода ближайшего соседа
+        pathLength = sumPathLength;
+        GreedyAlgorithmStart();
         var pathStr = arrKeys[path[0]];
         for (let i = 1; i < path.length; i++) {
             pathStr += " -> " + arrKeys[path[i]];
@@ -104,7 +99,6 @@ class ResultRoute extends React.Component {
 	    var multiRoute = new ymaps.multiRouter.MultiRoute({
             referencePoints: path,
             params: {
-                //Тип маршрутизации - пешеходная маршрутизация.
                 routingMode: 'pedestrian'
             }
         }, {

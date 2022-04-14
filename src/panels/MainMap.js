@@ -3,10 +3,10 @@ import { Panel, Button } from '@vkontakte/vkui';
 import './style.css';
 
 const PlacesList = ({places}) => {
-    var arr = Array.from(places.keys());
+    var names = Array.from(places.keys());
     return (
         <div className="basic-container">
-            {arr.map((k) => {
+            {names.map((k) => {
                 return (
                     <p key={k}>{k}</p>
                 )
@@ -15,7 +15,7 @@ const PlacesList = ({places}) => {
     )
 }
 
-class YMap extends React.Component {
+class YandexMap extends React.Component {
     constructor(props) {
         super(props);
         this.places = this.props.places;
@@ -38,32 +38,35 @@ class YMap extends React.Component {
     }
 
     init() {
-        var myMap = new ymaps.Map('map', {
-                center: [59.939099, 30.315877],
-                zoom: 12,
-                controls: []
-            }),
-            mySearchControl = new ymaps.control.SearchControl({
-                options: {
-                    noPlacemark: true
-                }
-            }),
-            mySearchResults = new ymaps.GeoObjectCollection(null, {
-                hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]'),
-                hasBalloon: false
-            });
-        myMap.controls.add(mySearchControl);
-        myMap.geoObjects.add(mySearchResults);
+        var map = new ymaps.Map('map', {
+            center: [59.939099, 30.315877],
+            zoom: 12,
+            controls: []
+        });
 
-        mySearchResults.events.add('click', (e) => this.addPlace(e));
-        mySearchControl.events.add('resultselect', function (e) {
+        var searchControl = new ymaps.control.SearchControl({
+            options: {
+                noPlacemark: true
+            }
+        });
+
+        var searchResults = new ymaps.GeoObjectCollection(null, {
+            hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]'),
+            hasBalloon: false
+        });
+
+        map.controls.add(searchControl);
+        map.geoObjects.add(searchResults);
+
+        searchResults.events.add('click', (e) => this.addPlace(e));
+        searchControl.events.add('resultselect', function (e) {
             var index = e.get('index');
-            mySearchControl.getResult(index).then(function (res) {
-                mySearchResults.add(res);
+            searchControl.getResult(index).then(function (res) {
+                searchResults.add(res);
             });
         }).add('submit', function () {
-                mySearchResults.removeAll();
-        })
+                searchResults.removeAll();
+        });
     };
 
     render() {
@@ -73,22 +76,15 @@ class YMap extends React.Component {
     }
 }
 
-class YandexMap extends React.Component {
+class MainMap extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {places: new Map(), changed: false};
 		this.go = this.props.go;
-		this.buildRoute = this.buildRoute.bind(this);
 	}
 
 	onChange = () => {
       this.setState({changed: true});
-    }
-
-    buildRoute(e, places) {
-        console.log(e);
-        console.log(places);
-        this.go(e, places);
     }
 
 	render() {
@@ -96,9 +92,9 @@ class YandexMap extends React.Component {
 		<Panel className="panel">
 		    <PlacesList places={this.state.places} />
 		    <Button size="m" mode="secondary" className="btn" onClick = {(e) => this.go(e, this.state.places)} data-to="resultRoute">Построить маршрут</Button>
-		    <YMap places={this.state.places} onChange={this.onChange} />
+		    <YandexMap places={this.state.places} onChange={this.onChange} />
 		</Panel>)
 	}
 };
 
-export default YandexMap;
+export default MainMap;
