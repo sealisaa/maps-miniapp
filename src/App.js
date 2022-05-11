@@ -3,7 +3,7 @@ import bridge from '@vkontakte/vk-bridge';
 import { View, ScreenSpinner, AdaptivityProvider, AppRoot } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
 
-import MainMap from './panels/MainMap';
+import MainMap from './panels/Main';
 import ResultRoute from './panels/ResultRoute';
 
 const ROUTES = {

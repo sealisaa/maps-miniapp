@@ -160,7 +160,7 @@ const TableBody = () => {
 	)
 }
 
-class Home extends React.Component {
+class Algorithms extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -239,4 +239,4 @@ class Home extends React.Component {
 	}
 };
 
-export default Home;
+export default Algorithms;

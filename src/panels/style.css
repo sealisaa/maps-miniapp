@@ -1,5 +1,5 @@
 .btn {
-  margin-top: 10px;
+  width: max-content;
 }
 
 table {
@@ -14,7 +14,7 @@ table td {
 }
 
 .panel {
-	padding: 10px;
+	padding: 1%;
 }
 
 .color {
@@ -34,4 +34,9 @@ table td {
 .basic-container {
     margin-left: 10px;
     margin-bottom: 10px;
+}
+
+.Chip {
+    margin-right: 0px;
+    width: max-content;
 }
