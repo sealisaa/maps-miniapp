@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack } from '@vkontakte/vkui';
 import './style.css';
 
 var distances = [];
@@ -58,8 +58,6 @@ function isAllVisited() {
 }
 
 function getDistances(places) {
-    arrKeys = Array.from(places.keys());
-    arrValues = Array.from(places.values());
     for (var i = 0; i < arrKeys.length; i++) {
         distances[i] = [];
         for (var j = 0; j < arrKeys.length; j++) {
@@ -79,19 +77,27 @@ class ResultRoute extends React.Component {
 	constructor(props) {
 		super(props);
 		this.init = this.init.bind(this);
+		this.go = this.props.go;
 		var places = this.props.places;
-		getDistances(places);
-        pathLength = sumPathLength;
-        GreedyAlgorithmStart();
-        var pathStr = arrKeys[path[0]];
-        for (let i = 1; i < path.length; i++) {
-            pathStr += " -> " + arrKeys[path[i]];
-        }
-        var arrPlaces = Array.from(places.entries());
-        for (let i = 0; i < path.length; i++) {
-            path[i] = arrValues[path[i]];
-        }
-        this.state = {path: path, pathStr: pathStr, changed: false};
+		arrKeys = Array.from(places.keys());
+        arrValues = Array.from(places.values());
+		if (places.size > 2) {
+		    getDistances(places);
+            pathLength = sumPathLength;
+            GreedyAlgorithmStart();
+            var pathStr = arrKeys[path[0]];
+            for (let i = 1; i < path.length; i++) {
+                pathStr += " -> " + arrKeys[path[i]];
+            }
+            var arrPlaces = Array.from(places.entries());
+            for (let i = 0; i < path.length; i++) {
+                path[i] = arrValues[path[i]];
+            }
+		} else {
+		    path = [arrValues[0], arrValues[1]];
+		    pathStr = arrKeys[0] + " -> " + arrKeys[1];
+		}
+        this.state = {places: places, path: path, pathStr: pathStr, changed: false};
         ymaps.ready(this.init);
 	}
 
@@ -116,6 +122,9 @@ class ResultRoute extends React.Component {
 	render() {
 		return(
 		<Panel className="panel">
+		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="mainMap"/>}>
+                Маршрут
+            </PanelHeader>
 		    <div className="basic-container">{this.state.pathStr}</div>
 		    <div id="routeMap" className="map-container"></div>
 		</Panel>)

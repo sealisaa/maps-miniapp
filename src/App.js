@@ -35,8 +35,8 @@ const App = () => {
 		<AdaptivityProvider>
 			<AppRoot>
 				<View activePanel={activePanel}>
-					<MainMap id={ROUTES.MAINMAP} go={go} />
-					<ResultRoute id={ROUTES.RESULTROUTE} places={chosenPlaces} />
+					<MainMap id={ROUTES.MAINMAP} go={go} places={chosenPlaces} />
+					<ResultRoute id={ROUTES.RESULTROUTE} places={chosenPlaces} go={go} />
 				</View>
 			</AppRoot>
 		</AdaptivityProvider>

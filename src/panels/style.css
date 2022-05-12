@@ -15,6 +15,7 @@ table td {
 
 .panel {
 	padding: 1%;
+	margin: 1%;
 }
 
 .color {
@@ -31,12 +32,22 @@ table td {
     margin-bottom: 10px;
 }
 
-.basic-container {
-    margin-left: 10px;
-    margin-bottom: 10px;
+.Chip {
+    margin-right: 5px;
+    width: max-content;
 }
 
-.Chip {
-    margin-right: 0px;
-    width: max-content;
+.FormItem {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+.SplitLayout {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+.SplitCol {
+    margin-left: 0px;
+    padding-left: 0px;
 }

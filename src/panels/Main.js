@@ -77,13 +77,11 @@ class YandexMap extends React.Component {
     };
 
     addPlace(pointName, pointCoords) {
-        console.log("add");
         this.places.set(pointName, pointCoords);
         this.props.onChange();
     }
 
     removePlace(pointName) {
-        console.log("delete");
         this.places.delete(pointName);
         this.props.onChange();
     }
@@ -148,7 +146,7 @@ class YandexMap extends React.Component {
 
     render() {
         return (
-            <SplitLayout className="panel" popout={this.state.popout}>
+            <SplitLayout popout={this.state.popout}>
                 <SplitCol>
                     <div id="map" className="map-container"></div>
                 </SplitCol>
@@ -160,19 +158,28 @@ class YandexMap extends React.Component {
 class MainMap extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {places: new Map(), changed: false};
+		if (this.props.places.size > 1) {
+		    this.state = {places: this.props.places, changed: false, btnDisabled: false};
+		} else {
+		    this.state = {places: this.props.places, changed: false, btnDisabled: true};
+		}
 		this.go = this.props.go;
 	}
 
 	onChange = () => {
-      this.setState({changed: true});
+        if (this.state.places.size > 1) {
+            this.setState({btnDisabled: false});
+        } else {
+            this.setState({btnDisabled: true});
+        }
+        this.setState({changed: true});
     }
 
 	render() {
 		return (
             <Panel className="panel">
                 <Places places={this.state.places} onChange={this.onChange} />
-                <Button size="s" mode="secondary" className="btn" onClick = {(e) => this.go(e, this.state.places)} data-to="resultRoute">Построить маршрут</Button>
+                <Button size="s" mode="secondary" className="btn" onClick = {(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                 <YandexMap places={this.state.places} onChange={this.onChange} />
             </Panel>
         )
