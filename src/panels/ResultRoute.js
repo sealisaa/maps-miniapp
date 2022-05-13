@@ -1,7 +1,6 @@
 import React from 'react';
 import { Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, List, Cell, Group, Div } from '@vkontakte/vkui';
 import { Icon24ChevronDown } from '@vkontakte/icons';
-import { Icon24ChevronUp } from '@vkontakte/icons';
 import './style.css';
 
 var distances = [];

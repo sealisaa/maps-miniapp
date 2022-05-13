@@ -10,9 +10,6 @@ class Intro extends React.Component {
 	render() {
 		return (
             <Panel className="panel">
-                <PanelHeader>Intro</PanelHeader>
-                <Group>
-                </Group>
             </Panel>
         )
 	}

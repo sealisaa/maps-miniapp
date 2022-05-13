@@ -1,6 +1,5 @@
 import React from 'react';
 import { Panel, PanelHeader, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
-import './style.css';
 import citiesJSON from './cities.json';
 
 var citiesArr = citiesJSON.response.items;
@@ -64,6 +63,8 @@ class YandexMap extends React.Component {
             zoom: 12,
             controls: []
         });
+
+        setCityCoords(this.props.city);
 
         var searchControl = new ymaps.control.SearchControl({
             options: {
@@ -158,7 +159,7 @@ class YandexMap extends React.Component {
 
         var cityList = new ymaps.control.ListBox({
             data: {
-                content: 'Санкт-Петербург'
+                content: this.props.city
             },
             items: Array.from(citiesList)
         });
@@ -180,7 +181,6 @@ class YandexMap extends React.Component {
         map.controls.add(cityList, {float: 'right'});
 
         function setCityCoords(city) {
-            console.log(city);
             var geocoder = ymaps.geocode(city);
             geocoder.then(
                 function (res) {
@@ -314,7 +314,7 @@ class MainMap extends React.Component {
                         <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
                     </Div>
-                    <Div><YandexMap places={this.state.places} onChange={this.onChange} /></Div>
+                    <Div><YandexMap places={this.state.places} onChange={this.onChange} city={this.props.city} /></Div>
                 </Group>
             </Panel>
         )
