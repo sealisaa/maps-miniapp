@@ -19,7 +19,7 @@ class Places extends React.Component {
         if (names.length == 0) {
             return(
                 <Div>
-                    <FormItem top="Добавляйте точки для маршрута нажатием на метки">
+                    <FormItem>
                     </FormItem>
                 </Div>
             )
@@ -219,12 +219,11 @@ class YandexMap extends React.Component {
     }
 }
 
-class MainMap extends React.Component {
+class Home extends React.Component {
 	constructor(props) {
 		super(props);
 		this.go = this.props.go;
 		this.clearPlaces = this.clearPlaces.bind(this);
-		console.log(this.props.places.size);
 		if (this.props.places.size > 0) {
 		    if (this.props.places.size > 1) {
 		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible"};
@@ -236,7 +235,7 @@ class MainMap extends React.Component {
 		}
 	}
 
-	onChange = () => {
+	onChange() {
         if (this.state.places.size > 0) {
             this.setState({btnVisibility: "visible"});
             if (this.state.places.size > 1) {
@@ -249,6 +248,19 @@ class MainMap extends React.Component {
             this.setState({btnDisabled: true});
         }
         this.setState({changed: true});
+    }
+
+    buildRoute() {
+        var multiRoute = new ymaps.multiRouter.MultiRoute({
+            referencePoints: [[55.734876, 37.59308],
+                              "Москва, ул. Мясницкая"],
+            params: {
+                routingMode: 'pedestrian'
+            }
+        }, {
+            boundsAutoApply: true
+        });
+
     }
 
     clearPlaces() {
@@ -275,4 +287,4 @@ class MainMap extends React.Component {
 	}
 };
 
-export default MainMap;
+export default Home;

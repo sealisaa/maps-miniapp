@@ -1,5 +1,7 @@
 import React from 'react';
-import { Panel, PanelHeader, PanelHeaderBack, Group, Div } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, List, Cell, Group, Div } from '@vkontakte/vkui';
+import { Icon24ChevronDown } from '@vkontakte/icons';
+import { Icon24ChevronUp } from '@vkontakte/icons';
 import './style.css';
 
 var distances = [];
@@ -73,6 +75,40 @@ function getDistances(places) {
     }
 }
 
+const Points = ({ points }) => {
+
+    const ABC = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
+    var i = 0;
+    return (
+        <Div className="Div-padding">
+            {points.map((point) => {
+                if (i == 0) {
+                    return (
+                        <div className="flex-container">
+                            <div className="letter" style={{background: "#FF485A"}}>{ABC[i++]}</div>
+                            <p>{point}</p>
+                        </div>
+                    )
+                }
+                if (i == points.length - 1) {
+                    return (
+                        <div className="flex-container">
+                            <div className="letter" style={{background: "#008cff"}}>{ABC[i++]}</div>
+                            <p>{point}</p>
+                        </div>
+                    )
+                }
+                return (
+                    <div className="flex-container">
+                        <div className="letter" style={{background: "#42bd42"}}>{ABC[i++]}</div>
+                        <p>{point}</p>
+                    </div>
+                )
+            })}
+        </Div>
+    );
+}
+
 class ResultRoute extends React.Component {
 	constructor(props) {
 		super(props);
@@ -87,35 +123,78 @@ class ResultRoute extends React.Component {
             pathLength = sumPathLength;
             GreedyAlgorithmStart();
             var pathStr = arrKeys[path[0]];
-            for (let i = 1; i < path.length; i++) {
-                pathStr += " -> " + arrKeys[path[i]];
-            }
-            var arrPlaces = Array.from(places.entries());
             for (let i = 0; i < path.length; i++) {
                 path[i] = arrValues[path[i]];
             }
 		} else {
 		    path = [arrValues[0], arrValues[1]];
-		    pathStr = arrKeys[0] + " -> " + arrKeys[1];
 		}
-        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: ""};
+		var pathStr = arrKeys;
+        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: true};
+        this.toggleContext = this.toggleContext.bind(this);
         ymaps.ready(this.init);
 	}
 
+	toggleContext() {
+        this.setState({ contextOpened: !this.state.contextOpened });
+    }
+
 	init() {
+	    var routeMap = new ymaps.Map('routeMap', {
+            center: [59.939099, 30.315877],
+            zoom: 12,
+            controls: []
+        }, {
+            buttonMaxWidth: 300
+        });
+
 	    var multiRoute = new ymaps.multiRouter.MultiRoute({
             referencePoints: path,
             params: {
-                routingMode: 'pedestrian'
+                routingMode: 'auto'
             }
         }, {
             boundsAutoApply: true
         });
 
-        var routeMap = new ymaps.Map('routeMap', {
-            center: [59.939099, 30.315877],
-            zoom: 12
+        routeMap.geoObjects.add(multiRoute);
+
+        var routeTypeSelector = new ymaps.control.ListBox({
+            data: {
+                content: 'Как добраться'
+            },
+            items: [
+                new ymaps.control.ListBoxItem({data: {content: "Авто"}, state: {selected: true}}),
+                new ymaps.control.ListBoxItem({data: {content: "Общественным транспортом"}}),
+                new ymaps.control.ListBoxItem({data: {content: "Пешком"}})
+            ],
+            options: {
+                itemSelectOnClick: false
+            }
         });
+
+        routeMap.controls.add(routeTypeSelector);
+
+        var autoRouteItem = routeTypeSelector.get(0);
+        var masstransitRouteItem = routeTypeSelector.get(1);
+        var pedestrianRouteItem = routeTypeSelector.get(2);
+
+        autoRouteItem.events.add('click', function (e) { changeRoutingMode('auto', e.get('target')); });
+        masstransitRouteItem.events.add('click', function (e) { changeRoutingMode('masstransit', e.get('target')); });
+        pedestrianRouteItem.events.add('click', function (e) { changeRoutingMode('pedestrian', e.get('target')); });
+
+        function changeRoutingMode(routingMode, targetItem) {
+            multiRoute.model.setParams({ routingMode: routingMode });
+            autoRouteItem.deselect();
+            masstransitRouteItem.deselect();
+            pedestrianRouteItem.deselect();
+            targetItem.select();
+            routeTypeSelector.collapse();
+            var activeRoute = multiRoute.getActiveRoute();
+            var distance = activeRoute.properties.get("distance").text;
+            var duration = activeRoute.properties.get("duration").text;
+            update(distance, duration);
+        }
 
         var setDistanceAndDuration = this.setDistanceAndDuration;
 
@@ -130,7 +209,13 @@ class ResultRoute extends React.Component {
             update(distance, duration);
         });
 
-        routeMap.geoObjects.add(multiRoute);
+        multiRoute.events.add('activeroutechange', function() {
+            console.log("active route changed");
+            var activeRoute = multiRoute.getActiveRoute();
+            var distance = activeRoute.properties.get("distance").text;
+            var duration = activeRoute.properties.get("duration").text;
+            update(distance, duration);
+        });
 	}
 
 	setDistanceAndDuration(distance, duration) {
@@ -142,12 +227,33 @@ class ResultRoute extends React.Component {
 		return(
 		<Panel className="panel">
 		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="mainMap"/>}>
-                Маршрут
+		        <PanelHeaderContent
+		            aside={
+		                <Icon24ChevronDown
+		                    style={{
+		                        transform: `rotate(${
+		                        this.state.contextOpened ? "180deg" : "0"
+		                        })`,
+		                        margin: "10px",
+		                    }}
+                        />
+                    }
+                    onClick={this.toggleContext}>
+                    Детали маршрута
+                </PanelHeaderContent>
             </PanelHeader>
+            <PanelHeaderContext opened={this.state.contextOpened} onClose={this.toggleContext}>
+                <List>
+                    <Points points={this.state.pathStr}></Points>
+                    <Div className="Div-padding">
+                        <div className="flex-container">
+                            <p className="black"><b>{this.state.duration}</b></p>
+                            <p className="grey"><b>{this.state.distance}</b></p>
+                        </div>
+                    </Div>
+                </List>
+              </PanelHeaderContext>
             <Group>
-                <Div className="basic-container">Длина маршрута: {this.state.distance}</Div>
-                <Div className="basic-container">Длительность маршрута: {this.state.duration}</Div>
-                <Div className="basic-container">{this.state.pathStr}</Div>
                 <Div id="routeMap" className="map-container"></Div>
             </Group>
 		</Panel>)

@@ -18,12 +18,52 @@
     width: max-content;
 }
 
+.FormItem {
+    padding-left: 0px;
+    padding-bottom: 0px;
+}
+
+.letter {
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    margin-right: 10px;
+}
+
+.flex-container {
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0px;
+    margin: 0px;
+    height: 35px;
+}
+
+.PanelHeaderContext {
+    vertical-align: center;
+}
+
+.black {
+    margin-right: 10px;
+}
+
+.grey {
+    color: #a2aab3;
+}
 
 .Div {
     padding-top: 0px;
 }
 
-.FormItem {
-    padding-left: 0px;
+.Div-padding {
     padding-bottom: 0px;
+}
+
+.Select {
+    width: max-content;
 }
