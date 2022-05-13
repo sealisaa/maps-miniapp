@@ -77,6 +77,7 @@ class ResultRoute extends React.Component {
 	constructor(props) {
 		super(props);
 		this.init = this.init.bind(this);
+		this.setDistanceAndDuration = this.setDistanceAndDuration.bind(this);
 		this.go = this.props.go;
 		var places = this.props.places;
 		arrKeys = Array.from(places.keys());
@@ -116,16 +117,26 @@ class ResultRoute extends React.Component {
             zoom: 12
         });
 
+        var setDistanceAndDuration = this.setDistanceAndDuration;
+
+        function update(distance, duration) {
+            setDistanceAndDuration(distance, duration)
+        }
+
         multiRoute.model.events.add('requestsuccess', function() {
             var activeRoute = multiRoute.getActiveRoute();
-//            this.setState({distance: activeRoute.properties.get("distance").text});
-//            this.setState({duration: activeRoute.properties.get("duration").text});
-            console.log("Длина всего пути: " + activeRoute.properties.get("distance").text);
-            console.log("Длительность всего пути: " + activeRoute.properties.get("duration").text);
+            var distance = activeRoute.properties.get("distance").text;
+            var duration = activeRoute.properties.get("duration").text;
+            update(distance, duration);
         });
+
         routeMap.geoObjects.add(multiRoute);
-        console.log(multiRoute.getActiveRoute());
 	}
+
+	setDistanceAndDuration(distance, duration) {
+        this.setState({distance: distance});
+        this.setState({duration: duration});
+    }
 
 	render() {
 		return(

@@ -224,11 +224,12 @@ class MainMap extends React.Component {
 		super(props);
 		this.go = this.props.go;
 		this.clearPlaces = this.clearPlaces.bind(this);
+		console.log(this.props.places.size);
 		if (this.props.places.size > 0) {
 		    if (this.props.places.size > 1) {
-		        this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "visible"};
-		    } else {
 		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible"};
+		    } else {
+		        this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "visible"};
 		    }
 		} else {
 		    this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "hidden"};
