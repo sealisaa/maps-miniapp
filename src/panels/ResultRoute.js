@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel, PanelHeader, PanelHeaderBack } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, Group, Div } from '@vkontakte/vkui';
 import './style.css';
 
 var distances = [];
@@ -97,7 +97,7 @@ class ResultRoute extends React.Component {
 		    path = [arrValues[0], arrValues[1]];
 		    pathStr = arrKeys[0] + " -> " + arrKeys[1];
 		}
-        this.state = {places: places, path: path, pathStr: pathStr, changed: false};
+        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: ""};
         ymaps.ready(this.init);
 	}
 
@@ -116,7 +116,15 @@ class ResultRoute extends React.Component {
             zoom: 12
         });
 
+        multiRoute.model.events.add('requestsuccess', function() {
+            var activeRoute = multiRoute.getActiveRoute();
+//            this.setState({distance: activeRoute.properties.get("distance").text});
+//            this.setState({duration: activeRoute.properties.get("duration").text});
+            console.log("Длина всего пути: " + activeRoute.properties.get("distance").text);
+            console.log("Длительность всего пути: " + activeRoute.properties.get("duration").text);
+        });
         routeMap.geoObjects.add(multiRoute);
+        console.log(multiRoute.getActiveRoute());
 	}
 
 	render() {
@@ -125,8 +133,12 @@ class ResultRoute extends React.Component {
 		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="mainMap"/>}>
                 Маршрут
             </PanelHeader>
-		    <div className="basic-container">{this.state.pathStr}</div>
-		    <div id="routeMap" className="map-container"></div>
+            <Group>
+                <Div className="basic-container">Длина маршрута: {this.state.distance}</Div>
+                <Div className="basic-container">Длительность маршрута: {this.state.duration}</Div>
+                <Div className="basic-container">{this.state.pathStr}</Div>
+                <Div id="routeMap" className="map-container"></Div>
+            </Group>
 		</Panel>)
 	}
 };

@@ -1,21 +1,6 @@
 .btn {
   width: max-content;
-}
-
-table {
-  border-collapse: collapse;
-  border: 1px solid black;
-}
-table td {
-  border: 1px solid black;
-  width: 25px;
-  height: 25px;
-  text-align: center;
-}
-
-.panel {
-	padding: 1%;
-	margin: 1%;
+  margin-right: 5px;
 }
 
 .color {
@@ -23,31 +8,22 @@ table td {
 }
 
 .map-container {
-    width: 600px;
+    width: 100%;
     height: 400px;
-}
-
-.Button {
-    margin-top: 10px;
-    margin-bottom: 10px;
 }
 
 .Chip {
     margin-right: 5px;
+    margin-bottom: 5px;
     width: max-content;
 }
 
+
+.Div {
+    padding-top: 0px;
+}
+
 .FormItem {
-    margin-left: 0px;
     padding-left: 0px;
-}
-
-.SplitLayout {
-    margin-left: 0px;
-    padding-left: 0px;
-}
-
-.SplitCol {
-    margin-left: 0px;
-    padding-left: 0px;
+    padding-bottom: 0px;
 }

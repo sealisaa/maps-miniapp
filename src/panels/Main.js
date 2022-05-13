@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
+import { Panel, PanelHeader, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View, HorizontalScroll } from '@vkontakte/vkui';
 import './style.css';
 
 class Places extends React.Component {
@@ -17,16 +17,23 @@ class Places extends React.Component {
     render() {
         var names = Array.from(this.places.keys());
         if (names.length == 0) {
-            return(<div></div>)
+            return(
+                <Div>
+                    <FormItem top="Добавляйте точки для маршрута нажатием на метки">
+                    </FormItem>
+                </Div>
+            )
         }
         return (
-            <FormItem top="Выбранные точки">
-            {names.map((place) => {
-                return (
-                    <Chip key={place} onClick={(e) => this.removePlace(e, place)}>{place}</Chip>
-                )
-            })}
-            </FormItem>
+            <Div>
+                <FormItem>
+                {names.map((place) => {
+                    return (
+                        <Chip key={place} onClick={(e) => this.removePlace(e, place)}>{place}</Chip>
+                    )
+                })}
+                </FormItem>
+            </Div>
         )
     }
 }
@@ -38,9 +45,9 @@ class YandexMap extends React.Component {
         this.addPlace = this.addPlace.bind(this);
         this.removePlace = this.removePlace.bind(this);
         this.init = this.init.bind(this);
-        this.state = {popout: null};
         this.openAlert = this.openAlert.bind(this);
         this.closeAlert = this.closeAlert.bind(this);
+        this.state = {popout: null, openAlert: this.openAlert};
         ymaps.ready(this.init);
     }
 
@@ -65,15 +72,76 @@ class YandexMap extends React.Component {
         map.controls.add(searchControl);
         map.geoObjects.add(searchResults);
 
-        searchResults.events.add('click', (e) => this.openAlert(e));
-        searchControl.events.add('resultselect', function (e, places) {
+        searchResults.events.add('click', (e) => addBySearch(e));
+        searchControl.events.add('resultselect', function (e) {
             var index = e.get('index');
             searchControl.getResult(index).then(function (res) {
+                map.geoObjects.removeAll();
                 searchResults.add(res);
+                map.geoObjects.add(searchResults);
             });
         }).add('submit', function () {
-                searchResults.removeAll();
+            searchResults.removeAll();
         });
+
+        var placemark;
+        var openAlert = this.openAlert;
+
+        function addByClick(e) {
+            var point = e.get('target');
+            if (point.properties._data.iconCaption != "поиск...") {
+                var pointName = point.properties._data.pointName;
+                if (pointName != '') {
+                    var pointCoords = point.geometry.getCoordinates();
+                    openAlert(pointName, pointCoords);
+                }
+            }
+        }
+
+        function addBySearch(e) {
+            var point = e.get('target');
+            var pointName = point.properties._data.name;
+            var pointCoords = point.geometry.getCoordinates();
+            openAlert(pointName, pointCoords);
+        }
+
+        map.events.add('click', function (e) {
+            map.geoObjects.removeAll();
+            var coords = e.get('coords');
+            placemark = createPlacemark(coords);
+            map.geoObjects.add(placemark);
+            placemark.events.add('dragend', function () {
+                getAddress(placemark.geometry.getCoordinates());
+            });
+            placemark.events.add('click', (e) => addByClick(e));
+            getAddress(coords);
+        });
+
+        function createPlacemark(coords) {
+            return new ymaps.Placemark(coords, {
+                iconCaption: 'поиск...'
+            }, {
+                preset: 'islands#blueDotIconWithCaption',
+                draggable: true
+            });
+        }
+
+        function getAddress(coords) {
+            placemark.properties.set('iconCaption', 'поиск...');
+            ymaps.geocode(coords).then(function (res) {
+                var firstGeoObject = res.geoObjects.get(0);
+                placemark.properties.set({
+                    iconCaption: [
+                        firstGeoObject.getThoroughfare() || firstGeoObject.getPremise(),
+                        firstGeoObject.getPremiseNumber()
+                    ].filter(Boolean).join(', '),
+                    pointName: [
+                        firstGeoObject.getThoroughfare() || firstGeoObject.getPremise(),
+                        firstGeoObject.getPremiseNumber()
+                    ].filter(Boolean).join(', ')
+                });
+            });
+        }
     };
 
     addPlace(pointName, pointCoords) {
@@ -86,10 +154,7 @@ class YandexMap extends React.Component {
         this.props.onChange();
     }
 
-    openAlert(e) {
-        var point = e.get('target');
-        var pointName = point.properties._data.name;
-        var pointCoords = e.get('target').geometry.getCoordinates();
+    openAlert(pointName, pointCoords) {
         if (this.places.has(pointName)) {
             this.setState({
                 popout: (
@@ -137,7 +202,6 @@ class YandexMap extends React.Component {
                 ),
             });
         }
-
     }
 
     closeAlert() {
@@ -158,29 +222,53 @@ class YandexMap extends React.Component {
 class MainMap extends React.Component {
 	constructor(props) {
 		super(props);
-		if (this.props.places.size > 1) {
-		    this.state = {places: this.props.places, changed: false, btnDisabled: false};
-		} else {
-		    this.state = {places: this.props.places, changed: false, btnDisabled: true};
-		}
 		this.go = this.props.go;
+		this.clearPlaces = this.clearPlaces.bind(this);
+		if (this.props.places.size > 0) {
+		    if (this.props.places.size > 1) {
+		        this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "visible"};
+		    } else {
+		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible"};
+		    }
+		} else {
+		    this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "hidden"};
+		}
 	}
 
 	onChange = () => {
-        if (this.state.places.size > 1) {
-            this.setState({btnDisabled: false});
+        if (this.state.places.size > 0) {
+            this.setState({btnVisibility: "visible"});
+            if (this.state.places.size > 1) {
+                this.setState({btnDisabled: false});
+            } else {
+                this.setState({btnDisabled: true});
+            }
         } else {
+            this.setState({btnVisibility: "hidden"});
             this.setState({btnDisabled: true});
         }
         this.setState({changed: true});
     }
 
+    clearPlaces() {
+        this.state.places.clear();
+        this.onChange();
+    }
+
 	render() {
 		return (
             <Panel className="panel">
-                <Places places={this.state.places} onChange={this.onChange} />
-                <Button size="s" mode="secondary" className="btn" onClick = {(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
-                <YandexMap places={this.state.places} onChange={this.onChange} />
+                <PanelHeader>
+                    Выберите точки
+                </PanelHeader>
+                <Group>
+                    <Places places={this.state.places} onChange={this.onChange} />
+                    <Div>
+                        <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
+                        <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
+                    </Div>
+                    <Div><YandexMap places={this.state.places} onChange={this.onChange} /></Div>
+                </Group>
             </Panel>
         )
 	}
