@@ -1,5 +1,6 @@
 import React from 'react';
 import { Panel, PanelHeader, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
+import './style.css';
 import citiesJSON from './cities.json';
 
 var citiesArr = citiesJSON.response.items;
@@ -58,6 +59,17 @@ class YandexMap extends React.Component {
     }
 
     init() {
+        var mapContainer = document.getElementById('map');
+        var topPanel = document.getElementById('topPanel');
+        var panelHeader = document.getElementById('panelHeader');
+        var mainGroup = document.getElementById('mainGroup');
+        console.log(mainGroup.offsetHeight);
+        if (mainGroup.offsetHeight > 500) {
+            mapContainer.style.height = mainGroup.offsetHeight - topPanel.offsetHeight + 16 + 'px';
+        } else {
+            mapContainer.style.height = mainGroup.offsetHeight - panelHeader.offsetHeight - topPanel.offsetHeight + 16 + 'px';
+        }
+
         var map = new ymaps.Map('map', {
             center: [59.939099, 30.315877],
             zoom: 12,
@@ -306,15 +318,17 @@ class MainMap extends React.Component {
 
 	render() {
 		return (
-            <Panel className="panel">
-                <PanelHeader>Выберите точки</PanelHeader>
-                <Group>
+            <Panel className="panel" id="mainPanel">
+                <PanelHeader id="panelHeader">Выберите точки</PanelHeader>
+                <Group id="mainGroup">
+                    <div id="topPanel">
                     <Places places={this.state.places} onChange={this.onChange} />
                     <Div>
                         <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
                     </Div>
-                    <Div><YandexMap places={this.state.places} onChange={this.onChange} city={this.props.city} /></Div>
+                    </div>
+                    <YandexMap places={this.state.places} onChange={this.onChange} city={this.props.city} />
                 </Group>
             </Panel>
         )
