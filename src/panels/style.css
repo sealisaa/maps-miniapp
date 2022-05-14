@@ -7,12 +7,6 @@
 	background-color: #EDEEF0;
 }
 
-
-.map-container {
-    width: 100%;
-    height: 400px;
-}
-
 .Chip {
     margin-right: 5px;
     margin-bottom: 5px;
@@ -95,32 +89,40 @@
 }
 
 #topPanel {
-    display: flex;
-    background-color: blue;
-    flex-basis: auto;
-    margin: 0px;
-
 }
 
 #mainPanel {
-    background-color: green;
     display: flex;
-    flexDirection:column;
-    padding-bottom: 0px;
-    margin-bottom: 0px;
+    flex-direction: column;
 }
 
-#mainGroup {
-    background-color: red;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flexDirection: column;
-    padding: 0px;
+#testDiv {
     flex: 1;
 }
 
-#map {
+#mainGroup {
+    flex: 1;
     display: flex;
-    margin: 0px;
+    flex-direction: column;
 }
+
+#mainMap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#splitLayout {
+}
+
+#splitCol {
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    flex: 1;
+    height: 1000px;
+}
+
+

@@ -59,17 +59,6 @@ class YandexMap extends React.Component {
     }
 
     init() {
-        var mapContainer = document.getElementById('map');
-        var topPanel = document.getElementById('topPanel');
-        var panelHeader = document.getElementById('panelHeader');
-        var mainGroup = document.getElementById('mainGroup');
-        console.log(mainGroup.offsetHeight);
-        if (mainGroup.offsetHeight > 500) {
-            mapContainer.style.height = mainGroup.offsetHeight - topPanel.offsetHeight + 16 + 'px';
-        } else {
-            mapContainer.style.height = mainGroup.offsetHeight - panelHeader.offsetHeight - topPanel.offsetHeight + 16 + 'px';
-        }
-
         var map = new ymaps.Map('map', {
             center: [59.939099, 30.315877],
             zoom: 12,
@@ -271,11 +260,15 @@ class YandexMap extends React.Component {
 
     render() {
         return (
-            <SplitLayout popout={this.state.popout}>
-                <SplitCol>
-                    <div id="map" className="map-container"></div>
-                </SplitCol>
-            </SplitLayout>
+            <div id="testDiv">
+                <SplitLayout popout={this.state.popout} id="splitLayout">
+                    <SplitCol id="splitCol">
+                        <div id="map" className="map-container">
+
+                        </div>
+                    </SplitCol>
+                </SplitLayout>
+            </div>
         )
     }
 }
@@ -320,7 +313,7 @@ class MainMap extends React.Component {
 		return (
             <Panel className="panel" id="mainPanel">
                 <PanelHeader id="panelHeader">Выберите точки</PanelHeader>
-                <Group id="mainGroup">
+                <div id="mainGroup">
                     <div id="topPanel">
                     <Places places={this.state.places} onChange={this.onChange} />
                     <Div>
@@ -328,8 +321,10 @@ class MainMap extends React.Component {
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
                     </Div>
                     </div>
-                    <YandexMap places={this.state.places} onChange={this.onChange} city={this.props.city} />
-                </Group>
+                    <div id="mainMap">
+                        <YandexMap id="yandexMap" places={this.state.places} onChange={this.onChange} city={this.props.city} />
+                    </div>
+                </div>
             </Panel>
         )
 	}
