@@ -1,7 +1,13 @@
 import React from 'react';
-import { Panel, PanelHeader, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderContent, PanelHeaderContext, List, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
 import './style.css';
 import citiesJSON from './cities.json';
+import { Icon24ChevronDown } from '@vkontakte/icons';
+
+var placemarksMap = new Map();
+var searchMap = null;
+
+var currentPlacemark = null;
 
 var citiesArr = citiesJSON.response.items;
 var citiesSet = new Set();
@@ -16,9 +22,11 @@ class Places extends React.Component {
         this.removePlace = this.removePlace.bind(this);
     }
 
-    removePlace(e, place) {
-        this.places.delete(place);
+    removePlace(e, pointName) {
+        this.places.delete(pointName);
         this.props.onChange();
+        searchMap.geoObjects.remove(placemarksMap.get(pointName));
+        placemarksMap.delete(pointName);
     }
 
     render() {
@@ -26,7 +34,7 @@ class Places extends React.Component {
         if (names.length == 0) {
             return(
                 <Div>
-                    <FormItem>
+                    <FormItem top="Вы еще не выбрали ни одной точки">
                     </FormItem>
                 </Div>
             )
@@ -34,9 +42,9 @@ class Places extends React.Component {
         return (
             <Div>
                 <FormItem>
-                {names.map((place) => {
+                {names.map((pointName) => {
                     return (
-                        <Chip key={place} onClick={(e) => this.removePlace(e, place)}>{place}</Chip>
+                        <Chip key={pointName} onClick={(e) => this.removePlace(e, pointName)}>{pointName}</Chip>
                     )
                 })}
                 </FormItem>
@@ -54,7 +62,7 @@ class YandexMap extends React.Component {
         this.init = this.init.bind(this);
         this.openAlert = this.openAlert.bind(this);
         this.closeAlert = this.closeAlert.bind(this);
-        this.state = {popout: null, openAlert: this.openAlert};
+        this.state = {popout: null};
         ymaps.ready(this.init);
     }
 
@@ -65,6 +73,8 @@ class YandexMap extends React.Component {
             controls: []
         });
 
+        searchMap = map;
+
         setCityCoords(this.props.city);
 
         var searchControl = new ymaps.control.SearchControl({
@@ -74,7 +84,6 @@ class YandexMap extends React.Component {
         });
 
         var searchResults = new ymaps.GeoObjectCollection(null, {
-            hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]'),
             hasBalloon: false
         });
 
@@ -85,7 +94,11 @@ class YandexMap extends React.Component {
         searchControl.events.add('resultselect', function (e) {
             var index = e.get('index');
             searchControl.getResult(index).then(function (res) {
-                map.geoObjects.removeAll();
+                if (currentPlacemark != null) {
+                    map.geoObjects.remove(currentPlacemark);
+                }
+                res.properties.set('iconCaption', res.properties._data.name);
+                currentPlacemark = res;
                 searchResults.add(res);
                 map.geoObjects.add(searchResults);
             });
@@ -95,6 +108,7 @@ class YandexMap extends React.Component {
 
         var placemark;
         var openAlert = this.openAlert;
+        var showChosenPoints = this.showChosenPoints;
 
         function addByClick(e) {
             var point = e.get('target');
@@ -115,9 +129,12 @@ class YandexMap extends React.Component {
         }
 
         map.events.add('click', function (e) {
-            map.geoObjects.removeAll();
+            if (currentPlacemark != null) {
+                map.geoObjects.remove(currentPlacemark);
+            }
             var coords = e.get('coords');
             placemark = createPlacemark(coords);
+            currentPlacemark = placemark;
             map.geoObjects.add(placemark);
             placemark.events.add('dragend', function () {
                 getAddress(placemark.geometry.getCoordinates());
@@ -197,11 +214,23 @@ class YandexMap extends React.Component {
     addPlace(pointName, pointCoords) {
         this.places.set(pointName, pointCoords);
         this.props.onChange();
+        searchMap.geoObjects.remove(currentPlacemark);
+        currentPlacemark = null;
+        var addedPlacemark = new ymaps.Placemark(pointCoords, {
+            iconCaption: pointName
+        }, {
+            preset: 'islands#redDotIconWithCaption'
+        })
+        searchMap.geoObjects.add(addedPlacemark);
+        placemarksMap.set(pointName, addedPlacemark);
+        addedPlacemark.events.add('click', () => this.openAlert(pointName, pointCoords));
     }
 
     removePlace(pointName) {
         this.places.delete(pointName);
         this.props.onChange();
+        searchMap.geoObjects.remove(placemarksMap.get(pointName));
+        placemarksMap.delete(pointName);
     }
 
     openAlert(pointName, pointCoords) {
@@ -260,11 +289,10 @@ class YandexMap extends React.Component {
 
     render() {
         return (
-            <div id="testDiv">
-                <SplitLayout popout={this.state.popout} id="splitLayout">
-                    <SplitCol id="splitCol">
+            <div className="mapDiv">
+                <SplitLayout popout={this.state.popout} className="splitLayout">
+                    <SplitCol className="splitCol">
                         <div id="map" className="map-container">
-
                         </div>
                     </SplitCol>
                 </SplitLayout>
@@ -280,13 +308,14 @@ class MainMap extends React.Component {
 		this.clearPlaces = this.clearPlaces.bind(this);
 		if (this.props.places.size > 0) {
 		    if (this.props.places.size > 1) {
-		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible"};
+		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible", contextOpened: false};
 		    } else {
-		        this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "visible"};
+		        this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "visible", contextOpened: false};
 		    }
 		} else {
-		    this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "hidden"};
+		    this.state = {places: this.props.places, changed: false, btnDisabled: true, btnVisibility: "hidden", contextOpened: false};
 		}
+		this.toggleContext = this.toggleContext.bind(this);
 	}
 
 	onChange = () => {
@@ -309,20 +338,43 @@ class MainMap extends React.Component {
         this.onChange();
     }
 
+    toggleContext() {
+        this.setState({ contextOpened: !this.state.contextOpened });
+    }
+
 	render() {
 		return (
             <Panel className="panel" id="mainPanel">
-                <PanelHeader id="panelHeader">Выберите точки</PanelHeader>
-                <div id="mainGroup">
-                    <div id="topPanel">
-                    <Places places={this.state.places} onChange={this.onChange} />
+                <PanelHeader id="panelHeader">
+                    <PanelHeaderContent
+                        aside={
+                            <Icon24ChevronDown
+                                style={{
+                                    transform: `rotate(${
+                                    this.state.contextOpened ? "180deg" : "0"
+                                    })`,
+                                    margin: "10px",
+                                }}
+                            />
+                        }
+                        onClick={this.toggleContext}>
+                        Выберите точки
+                    </PanelHeaderContent>
+                </PanelHeader>
+                <PanelHeaderContext opened={this.state.contextOpened} onClose={this.toggleContext}>
+                    <List>
+                        <Places places={this.state.places} onChange={this.onChange} />
+                    </List>
+                </PanelHeaderContext>
+                <div className="mainGroup">
+                    <div className="topPanel">
                     <Div>
                         <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
                     </Div>
                     </div>
-                    <div id="mainMap">
-                        <YandexMap id="yandexMap" places={this.state.places} onChange={this.onChange} city={this.props.city} />
+                    <div className="mainMap">
+                        <YandexMap className="yandexMap" places={this.state.places} onChange={this.onChange} city={this.props.city} />
                     </div>
                 </div>
             </Panel>

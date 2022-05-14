@@ -244,7 +244,7 @@ class ResultRoute extends React.Component {
             <PanelHeaderContext opened={this.state.contextOpened} onClose={this.toggleContext}>
                 <List>
                     <Points points={this.state.pathStr}></Points>
-                    <Div className="Div-padding">
+                    <Div>
                         <div className="flex-container">
                             <p className="black"><b>{this.state.duration}</b></p>
                             <p className="grey"><b>{this.state.distance}</b></p>
@@ -252,9 +252,9 @@ class ResultRoute extends React.Component {
                     </Div>
                 </List>
               </PanelHeaderContext>
-            <Group>
-                <Div id="routeMap" className="map-container"></Div>
-            </Group>
+            <div className="mainGroup">
+                <div id="routeMap" className="map-container"></div>
+            </div>
 		</Panel>)
 	}
 };
