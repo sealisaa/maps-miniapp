@@ -98,9 +98,9 @@ class YandexMap extends React.Component {
                     map.geoObjects.remove(currentPlacemark);
                 }
                 res.properties.set('iconCaption', res.properties._data.name);
-                currentPlacemark = res;
                 searchResults.add(res);
                 map.geoObjects.add(searchResults);
+                currentPlacemark = searchResults;
             });
         }).add('submit', function () {
             searchResults.removeAll();
@@ -214,8 +214,10 @@ class YandexMap extends React.Component {
     addPlace(pointName, pointCoords) {
         this.places.set(pointName, pointCoords);
         this.props.onChange();
-        searchMap.geoObjects.remove(currentPlacemark);
-        currentPlacemark = null;
+        if (currentPlacemark != null) {
+            searchMap.geoObjects.remove(currentPlacemark);
+            currentPlacemark = null;
+        }
         var addedPlacemark = new ymaps.Placemark(pointCoords, {
             iconCaption: pointName
         }, {
@@ -227,6 +229,7 @@ class YandexMap extends React.Component {
     }
 
     removePlace(pointName) {
+        console.log(currentPlacemark);
         this.places.delete(pointName);
         this.props.onChange();
         searchMap.geoObjects.remove(placemarksMap.get(pointName));
@@ -335,6 +338,9 @@ class MainMap extends React.Component {
 
     clearPlaces() {
         this.state.places.clear();
+        searchMap.geoObjects.removeAll();
+        placemarksMap.clear();
+        currentPlacemark = null;
         this.onChange();
     }
 
