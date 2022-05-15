@@ -209,6 +209,20 @@ class YandexMap extends React.Component {
                 }
             );
         }
+
+        if (this.places.size > 0) {
+            for (let pointName of this.props.places.keys()) {
+                var pointCoords = this.props.places.get(pointName);
+                var addedPlacemark = new ymaps.Placemark(pointCoords, {
+                    iconCaption: pointName
+                }, {
+                    preset: 'islands#redDotIconWithCaption'
+                })
+                searchMap.geoObjects.add(addedPlacemark);
+                placemarksMap.set(pointName, addedPlacemark);
+                addedPlacemark.events.add('click', () => this.openAlert(pointName, pointCoords));
+            }
+        }
     };
 
     addPlace(pointName, pointCoords) {
