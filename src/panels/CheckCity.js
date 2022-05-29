@@ -33,7 +33,7 @@ class CheckCity extends React.Component {
                         <h2>Ваш город: {this.state.user.city.title}</h2>
                         <Div className="flex-container">
                             <Button size="l" className="btn" onClick={(e) => this.props.confirmCity(e, this.state.user.city.title)}>Все верно</Button>
-                            <Button size="l" mode="secondary" className="btn" onClick={this.props.chooseCity}>Выбрать другой</Button>
+                            <Button size="l" mode="secondary" className="btn" onClick={this.props.selectCity}>Выбрать другой</Button>
                         </Div>
                     </Div>
                 </Panel>

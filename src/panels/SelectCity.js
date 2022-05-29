@@ -15,7 +15,7 @@ for (let i = 0; i < citiesArr.length; i++) {
     });
 }
 
-class ChooseCity extends React.Component {
+class SelectCity extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {isLoaded: false, btnDisabled: true, city: null};
@@ -44,4 +44,4 @@ class ChooseCity extends React.Component {
 	}
 };
 
-export default ChooseCity;
+export default SelectCity;

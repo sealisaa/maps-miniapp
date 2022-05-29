@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import bridge from '@vkontakte/vk-bridge';
-import { View, ScreenSpinner, ConfigProvider, AdaptivityProvider, AppRoot, SplitLayout, SplitCol, Snackbar, Avatar } from '@vkontakte/vkui';
+import { View, ScreenSpinner, AdaptivityProvider, AppRoot, Snackbar, Avatar } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
 import { Icon24Error } from '@vkontakte/icons';
 
 import MainMap from './panels/MainMap';
 import ResultRoute from './panels/ResultRoute';
-import ChooseCity from './panels/ChooseCity';
+import SelectCity from './panels/SelectCity';
 import CheckCity from './panels/CheckCity';
+import Blank from './panels/Blank';
 import Intro from './panels/Intro';
 
 const ROUTES = {
 	MAINMAP: 'mainMap',
 	RESULTROUTE: 'resultRoute',
 	CHECKCITY: 'checkCity',
-	CHOOSECITY: 'chooseCity',
+	SELECTCITY: 'selectCity',
+	BLANK: 'blank',
 	INTRO: 'intro'
 }
 
@@ -27,11 +29,11 @@ var city;
 
 const App = () => {
     const [scheme, setScheme] = useState('bright_light');
-	const [activePanel, setActivePanel] = useState(ROUTES.INTRO);
+	const [activePanel, setActivePanel] = useState(ROUTES.BLANK);
 	const [fetchedUser, setUser] = useState(null);
 	const [userCity, setCity] = useState(null);
 	const [popout, setPopout] = useState(<ScreenSpinner size='large' />);
-    const [userChoseCity, setUserChoseCity] = useState(false);
+    const [userSelectedCity, setUserSelectedCity] = useState(false);
     const [snackbar, setSnackbar] = useState(false);
 
     useEffect(() => {
@@ -51,14 +53,13 @@ const App = () => {
                 data[key] = value ? JSON.parse(value) : {};
                 switch (key) {
                     case STORAGE_KEYS.STATUS:
-                        if (data[key].cityChosen) {
+                        if (data[key].citySelected) {
                             setActivePanel(ROUTES.MAINMAP);
-                            setUserChoseCity(true);
+                            setUserSelectedCity(true);
                             setCity(data[key].userCity);
                         } else {
-                            setActivePanel(ROUTES.CHECKCITY);
+                            setActivePanel(ROUTES.INTRO);
                         }
-                        //setActivePanel(ROUTES.CHECKCITY);
                         break;
                     default:
                         break;
@@ -86,8 +87,12 @@ const App = () => {
 		setActivePanel(e.currentTarget.dataset.to);
 	};
 
-	const chooseCity = (e) => {
-        setActivePanel(ROUTES.CHOOSECITY);
+	const selectCity = (e) => {
+        setActivePanel(ROUTES.SELECTCITY);
+    }
+
+    const closeIntro = (e) => {
+        setActivePanel(ROUTES.CHECKCITY);
     }
 
     const confirmCity = async function (e, city) {
@@ -96,7 +101,7 @@ const App = () => {
             await bridge.send('VKWebAppStorageSet', {
                 key: STORAGE_KEYS.STATUS,
                 value: JSON.stringify({
-                    cityChosen: true,
+                    citySelected: true,
                     userCity: city
                 })
             });
@@ -119,9 +124,10 @@ const App = () => {
         <AdaptivityProvider>
             <AppRoot>
                 <View activePanel={activePanel} popout={popout}>
-                    <Intro id={ROUTES.INTRO} />
-                    <ChooseCity id={ROUTES.CHOOSECITY} confirmCity={confirmCity} />
-                    <CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} chooseCity={chooseCity} userChoseCity={userChoseCity} />
+                    <Blank id={ROUTES.BLANK} />
+                    <Intro id={ROUTES.INTRO} closeIntro={closeIntro} />
+                    <SelectCity id={ROUTES.SELECTCITY} confirmCity={confirmCity} />
+                    <CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} selectCity={selectCity} />
                     <MainMap id={ROUTES.MAINMAP} go={go} places={chosenPlaces} city={userCity} />
                     <ResultRoute id={ROUTES.RESULTROUTE} places={chosenPlaces} go={go} />
                 </View>

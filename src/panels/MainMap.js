@@ -53,7 +53,7 @@ class Places extends React.Component {
     }
 }
 
-class YandexMap extends React.Component {
+class SearchMap extends React.Component {
     constructor(props) {
         super(props);
         this.places = this.props.places;
@@ -75,7 +75,7 @@ class YandexMap extends React.Component {
 
         searchMap = map;
 
-        setCityCoords(this.props.city);
+        setMapCenter(this.props.city);
 
         var searchControl = new ymaps.control.SearchControl({
             options: {
@@ -192,13 +192,13 @@ class YandexMap extends React.Component {
                     selectedItem.deselect();
                 }
                 selectedItem = e.get('target');
-                setCityCoords(cities[i]);
+                setMapCenter(cities[i]);
             });
         }
 
         map.controls.add(cityList, {float: 'right'});
 
-        function setCityCoords(city) {
+        function setMapCenter(city) {
             var geocoder = ymaps.geocode(city);
             geocoder.then(
                 function (res) {
@@ -394,7 +394,7 @@ class MainMap extends React.Component {
                     </Div>
                     </div>
                     <div className="mainMap">
-                        <YandexMap className="yandexMap" places={this.state.places} onChange={this.onChange} city={this.props.city} />
+                        <SearchMap className="yandexMap" places={this.state.places} onChange={this.onChange} city={this.props.city} />
                     </div>
                 </div>
             </Panel>
