@@ -1,9 +1,7 @@
 import React from 'react';
-import { Panel, Group, Div, Avatar, Button } from '@vkontakte/vkui';
+import { Panel, Div, Button } from '@vkontakte/vkui';
 import { Icon56PlaceOutline } from '@vkontakte/icons';
-import { Icon56GhostOutline, Icon28AppleOutline, Icon28BillheadOutline, Icon28FavoriteOutline } from '@vkontakte/icons';
 import bridge from '@vkontakte/vk-bridge';
-import citiesJSON from './cities.json';
 
 class CheckCity extends React.Component {
 	constructor(props) {
@@ -20,11 +18,14 @@ class CheckCity extends React.Component {
                     user: user
                 });
             })
-            .catch(error => {
+            .catch(() => {
             });
     }
 
 	render() {
+        if (this.state.user.city.title === "") {
+            this.props.selectCity();
+        }
 	    if (this.state.isLoaded) {
 	        return (
                 <Panel className="panel" centered="true">
@@ -45,6 +46,6 @@ class CheckCity extends React.Component {
             )
 	    }
 	}
-};
+}
 
 export default CheckCity;

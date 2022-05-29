@@ -1,19 +1,28 @@
 import React from 'react';
-import { Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, List, Cell, Group, Div } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, List, Div } from '@vkontakte/vkui';
 import { Icon24ChevronDown } from '@vkontakte/icons';
 import './style.css';
 
-var distances = [];
-var arrKeys;
-var arrValues;
-var path = [];
-var pathLength;
-var sumPathLength = 0;
-var visited = [];
-var currentPath = [];
-var currentPathLength;
+let distances = [];
+let arrKeys;
+let arrValues;
+let path = [];
+let pathLength;
+let sumPathLength = 0;
+let visited = [];
+let currentPath = [];
+let currentPathLength;
 
 function GreedyAlgorithmStart() {
+    /*if(задана первая точка) {
+        for (let j = 0; j < distances.length; j++) {
+			visited[j] = false;
+		}
+        visited[start] = true;
+		currentPath = [start];
+		currentPathLength = 0;
+        GreedyAlgorithm(start);
+    }*/
 	for (let i = 0; i < distances.length; i++) {
 		for (let j = 0; j < distances.length; j++) {
 			visited[j] = false;
@@ -33,15 +42,15 @@ function GreedyAlgorithm(i) {
 	if (isAllVisited()) {
 		return;
 	}
-	var currentMinDistance = sumPathLength;
-	var currentMinEdge = -1;
-	for (let j = 0; j < distances[i].length; j++) {
-		if (distances[i][j] != -1 && !visited[j] && distances[i][j] < currentMinDistance) {
+    let currentMinDistance = sumPathLength;
+    let currentMinEdge = -1;
+    for (let j = 0; j < distances[i].length; j++) {
+		if (distances[i][j] !== -1 && !visited[j] && distances[i][j] < currentMinDistance) {
 			currentMinDistance = distances[i][j];
 			currentMinEdge = j;
 		}
 	}
-	if (currentMinEdge != -1) {
+	if (currentMinEdge !== -1) {
 		visited[currentMinEdge] = true;
 		currentPath[currentPath.length] = currentMinEdge;
 		currentPathLength += currentMinDistance;
@@ -58,15 +67,15 @@ function isAllVisited() {
 	return true;
 }
 
-function getDistances(places) {
-    for (var i = 0; i < arrKeys.length; i++) {
+function getDistances() {
+    for (let i = 0; i < arrKeys.length; i++) {
         distances[i] = [];
-        for (var j = 0; j < arrKeys.length; j++) {
+        for (let j = 0; j < arrKeys.length; j++) {
             distances[i][j] = -1;
         }
     }
-    for (var i = 0; i < arrKeys.length; i++) {
-        for (var j = i + 1; j < arrKeys.length; j++) {
+    for (let i = 0; i < arrKeys.length; i++) {
+        for (let j = i + 1; j < arrKeys.length; j++) {
             distances[i][j] = ymaps.coordSystem.geo.getDistance(arrValues[i], arrValues[j]);
             distances[j][i] = distances[i][j];
             sumPathLength += distances[i][j];
@@ -75,13 +84,12 @@ function getDistances(places) {
 }
 
 const Points = ({ points }) => {
-
     const ABC = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
-    var i = 0;
+    let i = 0;
     return (
         <Div className="Div-padding">
             {points.map((point) => {
-                if (i == 0) {
+                if (i === 0) {
                     return (
                         <div className="flex-container">
                             <div className="letter" style={{background: "#FF485A"}}>{ABC[i++]}</div>
@@ -89,7 +97,10 @@ const Points = ({ points }) => {
                         </div>
                     )
                 }
-                if (i == points.length - 1) {
+                if (i === 27) {
+                    i = 0;
+                }
+                if (i === points.length - 1) {
                     return (
                         <div className="flex-container">
                             <div className="letter" style={{background: "#008cff"}}>{ABC[i++]}</div>
@@ -110,25 +121,25 @@ const Points = ({ points }) => {
 
 class ResultRoute extends React.Component {
 	constructor(props) {
-		super(props);
+		let pathStr;
+        super(props);
 		this.init = this.init.bind(this);
 		this.setDistanceAndDuration = this.setDistanceAndDuration.bind(this);
 		this.go = this.props.go;
-		var places = this.props.places;
-		arrKeys = Array.from(places.keys());
+        let places = this.props.places;
+        arrKeys = Array.from(places.keys());
         arrValues = Array.from(places.values());
 		if (places.size > 2) {
 		    getDistances(places);
             pathLength = sumPathLength;
             GreedyAlgorithmStart();
-            var pathStr = arrKeys[path[0]];
             for (let i = 0; i < path.length; i++) {
                 path[i] = arrValues[path[i]];
             }
 		} else {
 		    path = [arrValues[0], arrValues[1]];
 		}
-		var pathStr = arrKeys;
+        pathStr = arrKeys;
         this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: true};
         this.toggleContext = this.toggleContext.bind(this);
         ymaps.ready(this.init);
@@ -139,7 +150,7 @@ class ResultRoute extends React.Component {
     }
 
 	init() {
-	    var routeMap = new ymaps.Map('routeMap', {
+        let routeMap = new ymaps.Map('routeMap', {
             center: [59.939099, 30.315877],
             zoom: 12,
             controls: []
@@ -147,7 +158,7 @@ class ResultRoute extends React.Component {
             buttonMaxWidth: 300
         });
 
-	    var multiRoute = new ymaps.multiRouter.MultiRoute({
+        let multiRoute = new ymaps.multiRouter.MultiRoute({
             referencePoints: path,
             params: {
                 routingMode: 'auto'
@@ -158,7 +169,7 @@ class ResultRoute extends React.Component {
 
         routeMap.geoObjects.add(multiRoute);
 
-        var routeTypeSelector = new ymaps.control.ListBox({
+        let routeTypeSelector = new ymaps.control.ListBox({
             data: {
                 content: 'Как добраться'
             },
@@ -174,9 +185,9 @@ class ResultRoute extends React.Component {
 
         routeMap.controls.add(routeTypeSelector);
 
-        var autoRouteItem = routeTypeSelector.get(0);
-        var masstransitRouteItem = routeTypeSelector.get(1);
-        var pedestrianRouteItem = routeTypeSelector.get(2);
+        let autoRouteItem = routeTypeSelector.get(0);
+        let masstransitRouteItem = routeTypeSelector.get(1);
+        let pedestrianRouteItem = routeTypeSelector.get(2);
 
         autoRouteItem.events.add('click', function (e) { changeRoutingMode('auto', e.get('target')); });
         masstransitRouteItem.events.add('click', function (e) { changeRoutingMode('masstransit', e.get('target')); });
@@ -189,30 +200,30 @@ class ResultRoute extends React.Component {
             pedestrianRouteItem.deselect();
             targetItem.select();
             routeTypeSelector.collapse();
-            var activeRoute = multiRoute.getActiveRoute();
-            var distance = activeRoute.properties.get("distance").text;
-            var duration = activeRoute.properties.get("duration").text;
+            let activeRoute = multiRoute.getActiveRoute();
+            let distance = activeRoute.properties.get("distance").text;
+            let duration = activeRoute.properties.get("duration").text;
             update(distance, duration);
         }
 
-        var setDistanceAndDuration = this.setDistanceAndDuration;
+        let setDistanceAndDuration = this.setDistanceAndDuration;
 
         function update(distance, duration) {
             setDistanceAndDuration(distance, duration)
         }
 
         multiRoute.model.events.add('requestsuccess', function() {
-            var activeRoute = multiRoute.getActiveRoute();
-            var distance = activeRoute.properties.get("distance").text;
-            var duration = activeRoute.properties.get("duration").text;
+            let activeRoute = multiRoute.getActiveRoute();
+            let distance = activeRoute.properties.get("distance").text;
+            let duration = activeRoute.properties.get("duration").text;
             update(distance, duration);
         });
 
         multiRoute.events.add('activeroutechange', function() {
             console.log("active route changed");
-            var activeRoute = multiRoute.getActiveRoute();
-            var distance = activeRoute.properties.get("distance").text;
-            var duration = activeRoute.properties.get("duration").text;
+            let activeRoute = multiRoute.getActiveRoute();
+            let distance = activeRoute.properties.get("distance").text;
+            let duration = activeRoute.properties.get("duration").text;
             update(distance, duration);
         });
 	}
@@ -257,6 +268,6 @@ class ResultRoute extends React.Component {
             </div>
 		</Panel>)
 	}
-};
+}
 
 export default ResultRoute;

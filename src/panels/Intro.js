@@ -2,9 +2,7 @@ import React from 'react';
 import { Panel, Group, Div, Avatar, Button } from '@vkontakte/vkui';
 import './style.css';
 import { Icon28Search } from '@vkontakte/icons';
-import { Icon28SmartphoneStarsOutline } from '@vkontakte/icons';
 import { Icon28PlaceOutline } from '@vkontakte/icons';
-import { Icon28NarrativeOutline } from '@vkontakte/icons';
 import { Icon56GhostOutline } from '@vkontakte/icons';
 import { Icon28LocationOutline } from '@vkontakte/icons';
 
@@ -39,6 +37,6 @@ class Intro extends React.Component {
             </Panel>
         )
 	}
-};
+}
 
 export default Intro;
