@@ -1,7 +1,6 @@
 import React from 'react';
-import { Panel, PanelHeader, Group } from '@vkontakte/vkui';
+import { Panel } from '@vkontakte/vkui';
 import './style.css';
-import citiesJSON from './cities.json';
 
 class Blank extends React.Component {
 	constructor(props) {
@@ -13,6 +12,6 @@ class Blank extends React.Component {
             </Panel>
         )
 	}
-};
+}
 
 export default Blank;

@@ -1,16 +1,16 @@
 import React from 'react';
-import { Panel, PanelHeader, PanelHeaderContent, PanelHeaderContext, List, Group, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, View } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderContent, PanelHeaderContext, List, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol } from '@vkontakte/vkui';
 import './style.css';
 import citiesJSON from './cities.json';
 import { Icon24ChevronDown } from '@vkontakte/icons';
 
-var placemarksMap = new Map();
-var searchMap = null;
+let placemarksMap = new Map();
+let searchMap = null;
 
-var currentPlacemark = null;
+let currentPlacemark = null;
 
-var citiesArr = citiesJSON.response.items;
-var citiesSet = new Set();
+let citiesArr = citiesJSON.response.items;
+let citiesSet = new Set();
 for (let i = 0; i < citiesArr.length; i++) {
     citiesSet.add(citiesArr[i].title);
 }
@@ -30,8 +30,8 @@ class Places extends React.Component {
     }
 
     render() {
-        var names = Array.from(this.places.keys());
-        if (names.length == 0) {
+        let names = Array.from(this.places.keys());
+        if (names.length === 0) {
             return(
                 <Div>
                     <FormItem top="Вы еще не выбрали ни одной точки">
@@ -67,75 +67,72 @@ class SearchMap extends React.Component {
     }
 
     init() {
-        var map = new ymaps.Map('map', {
+        searchMap = new ymaps.Map('map', {
             center: [59.939099, 30.315877],
             zoom: 12,
             controls: []
         });
 
-        searchMap = map;
-
         setMapCenter(this.props.city);
 
-        var searchControl = new ymaps.control.SearchControl({
+        let searchControl = new ymaps.control.SearchControl({
             options: {
                 noPlacemark: true
             }
         });
 
-        var searchResults = new ymaps.GeoObjectCollection(null, {
+        let searchResults = new ymaps.GeoObjectCollection(null, {
             hasBalloon: false
         });
 
-        map.controls.add(searchControl);
-        map.geoObjects.add(searchResults);
+        searchMap.controls.add(searchControl);
+        searchMap.geoObjects.add(searchResults);
 
         searchResults.events.add('click', (e) => addBySearch(e));
         searchControl.events.add('resultselect', function (e) {
-            var index = e.get('index');
+            let index = e.get('index');
             searchControl.getResult(index).then(function (res) {
                 if (currentPlacemark != null) {
-                    map.geoObjects.remove(currentPlacemark);
+                    searchMap.geoObjects.remove(currentPlacemark);
                 }
                 res.properties.set('iconCaption', res.properties._data.name);
                 searchResults.add(res);
-                map.geoObjects.add(searchResults);
+                searchMap.geoObjects.add(searchResults);
                 currentPlacemark = searchResults;
             });
         }).add('submit', function () {
             searchResults.removeAll();
         });
 
-        var placemark;
-        var openAlert = this.openAlert;
-        var showChosenPoints = this.showChosenPoints;
+        let placemark;
+        let openAlert = this.openAlert;
 
         function addByClick(e) {
-            var point = e.get('target');
-            if (point.properties._data.iconCaption != "поиск...") {
-                var pointName = point.properties._data.pointName;
-                if (pointName != '') {
-                    var pointCoords = point.geometry.getCoordinates();
+            let point = e.get('target');
+            if (point.properties._data.iconCaption !== "поиск...") {
+                let pointName = point.properties._data.pointName;
+                if (pointName !== '') {
+                    let pointCoords = point.geometry.getCoordinates();
                     openAlert(pointName, pointCoords);
                 }
             }
         }
 
         function addBySearch(e) {
-            var point = e.get('target');
-            var pointName = point.properties._data.name;
-            var pointCoords = point.geometry.getCoordinates();
+            let point = e.get('target');
+            let pointName = point.properties._data.name;
+            let pointCoords = point.geometry.getCoordinates();
             openAlert(pointName, pointCoords);
         }
 
-        map.events.add('click', function (e) {
+        searchMap.events.add('click', function (e) {
             if (currentPlacemark != null) {
-                map.geoObjects.remove(currentPlacemark);
+                searchMap.geoObjects.remove(currentPlacemark);
             }
-            var coords = e.get('coords');
+            let coords = e.get('coords');
             placemark = createPlacemark(coords);
             currentPlacemark = placemark;
-            map.geoObjects.add(placemark);
+            searchMap.geoObjects.add(placemark);
             placemark.events.add('dragend', function () {
                 getAddress(placemark.geometry.getCoordinates());
             });
@@ -155,7 +152,7 @@ class SearchMap extends React.Component {
         function getAddress(coords) {
             placemark.properties.set('iconCaption', 'поиск...');
             ymaps.geocode(coords).then(function (res) {
-                var firstGeoObject = res.geoObjects.get(0);
+                let firstGeoObject = res.geoObjects.get(0);
                 placemark.properties.set({
                     iconCaption: [
                         firstGeoObject.getThoroughfare() || firstGeoObject.getPremise(),
@@ -169,20 +166,20 @@ class SearchMap extends React.Component {
             });
         }
 
-        var cities = Array.from(citiesSet);
-        var citiesList = new Set();
+        let cities = Array.from(citiesSet);
+        let citiesList = new Set();
         for (let i = 0; i < cities.length; i++) {
             citiesList.add(new ymaps.control.ListBoxItem(cities[i]));
         }
 
-        var cityList = new ymaps.control.ListBox({
+        let cityList = new ymaps.control.ListBox({
             data: {
                 content: this.props.city
             },
             items: Array.from(citiesList)
         });
 
-        var selectedItem = null;
+        let selectedItem = null;
 
         for (let i = 0; i < cities.length; i++) {
             cityList.get(i).events.add('click', function (e) {
@@ -196,14 +193,14 @@ class SearchMap extends React.Component {
             });
         }
 
-        map.controls.add(cityList, {float: 'right'});
+        searchMap.controls.add(cityList, {float: 'right'});
 
         function setMapCenter(city) {
-            var geocoder = ymaps.geocode(city);
+            let geocoder = ymaps.geocode(city);
             geocoder.then(
                 function (res) {
-                    var coords = res.geoObjects.get(0).geometry._coordinates;
-                    map.setCenter(coords);
+                    let coords = res.geoObjects.get(0).geometry._coordinates;
+                    searchMap.setCenter(coords);
                 },
                 function (err) {
                 }
@@ -212,12 +209,12 @@ class SearchMap extends React.Component {
 
         if (this.places.size > 0) {
             for (let pointName of this.props.places.keys()) {
-                var pointCoords = this.props.places.get(pointName);
-                var addedPlacemark = new ymaps.Placemark(pointCoords, {
+                let pointCoords = this.props.places.get(pointName);
+                let addedPlacemark = new ymaps.Placemark(pointCoords, {
                     iconCaption: pointName
                 }, {
                     preset: 'islands#redDotIconWithCaption'
-                })
+                });
                 searchMap.geoObjects.add(addedPlacemark);
                 placemarksMap.set(pointName, addedPlacemark);
                 addedPlacemark.events.add('click', () => this.openAlert(pointName, pointCoords));
@@ -232,11 +229,11 @@ class SearchMap extends React.Component {
             searchMap.geoObjects.remove(currentPlacemark);
             currentPlacemark = null;
         }
-        var addedPlacemark = new ymaps.Placemark(pointCoords, {
+        let addedPlacemark = new ymaps.Placemark(pointCoords, {
             iconCaption: pointName
         }, {
             preset: 'islands#redDotIconWithCaption'
-        })
+        });
         searchMap.geoObjects.add(addedPlacemark);
         placemarksMap.set(pointName, addedPlacemark);
         addedPlacemark.events.add('click', () => this.openAlert(pointName, pointCoords));
@@ -324,6 +321,7 @@ class MainMap extends React.Component {
 		this.go = this.props.go;
 		this.clearPlaces = this.clearPlaces.bind(this);
 		if (this.props.places.size > 0) {
+            this.props.places.delete("Вы здесь");
 		    if (this.props.places.size > 1) {
 		        this.state = {places: this.props.places, changed: false, btnDisabled: false, btnVisibility: "visible", contextOpened: false};
 		    } else {
@@ -400,6 +398,6 @@ class MainMap extends React.Component {
             </Panel>
         )
 	}
-};
+}
 
 export default MainMap;
