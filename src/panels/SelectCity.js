@@ -16,7 +16,7 @@ for (let i = 0; i < citiesArr.length; i++) {
 class SelectCity extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {isLoaded: false, btnDisabled: true, city: null};
+		this.state = {btnDisabled: true, city: null};
 	}
 
 	render() {

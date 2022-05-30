@@ -1,7 +1,9 @@
 import React from 'react';
-import {Div, List, Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext} from '@vkontakte/vkui';
-import {Icon24ChevronDown} from '@vkontakte/icons';
+import { Div, List, Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, Avatar } from '@vkontakte/vkui';
+import { Icon24ChevronDown, Icon28Favorite } from '@vkontakte/icons';
+import { Icon28FavoriteOutline } from '@vkontakte/icons';
 import './style.css';
+import bridge from "@vkontakte/vk-bridge";
 
 let distances = [];
 let arrNames;
@@ -16,6 +18,11 @@ let currentPathLength;
 let places;
 let routeMap = null;
 let route = null;
+let userRoutes = [];
+
+const STORAGE_KEYS = {
+    ROUTES: 'userRoutes',
+}
 
 function GreedyAlgorithmStart(startPoint) {
 	for (let i = 0; i < distances.length; i++) {
@@ -127,7 +134,11 @@ class Route extends React.Component {
 		this.init = this.init.bind(this);
 		this.setDistanceAndDuration = this.setDistanceAndDuration.bind(this);
         this.buildRoute = this.buildRoute.bind(this);
+        this.saveRoute = this.saveRoute.bind(this);
+        this.deleteRoute = this.deleteRoute.bind(this);
         this.toggleContext = this.toggleContext.bind(this);
+        this.getUserRoutes = this.getUserRoutes.bind(this);
+        this.getUserRoutes();
 		this.go = this.props.go;
         places = this.props.places;
         arrNames = Array.from(places.keys());
@@ -144,9 +155,19 @@ class Route extends React.Component {
             path = arrCoords;
             pathStr = arrNames;
         }
-        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: true};
+        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: false, saved: false, saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"};
         ymaps.ready(this.init);
 	}
+
+    getUserRoutes() {
+        async function fetchData() {
+            const storageData = await bridge.send('VKWebAppStorageGet', {
+                keys: Object.values(STORAGE_KEYS)
+            });
+            userRoutes = JSON.parse(storageData.keys[0].value);
+        }
+        fetchData();
+    }
 
 	toggleContext() {
         this.setState({ contextOpened: !this.state.contextOpened });
@@ -240,8 +261,8 @@ class Route extends React.Component {
             });
         }
 
+        routeMap.controls.add(startPointSelector);
         routeMap.controls.add(routeTypeSelector);
-        routeMap.controls.add(startPointSelector, {float: 'right'});
 
         let autoRouteItem = routeTypeSelector.get(0);
         let masstransitRouteItem = routeTypeSelector.get(1);
@@ -317,10 +338,25 @@ class Route extends React.Component {
         this.setState({distance: distance, duration: duration});
     }
 
+    saveRoute() {
+        userRoutes['routes'].push({
+            "name": "имя маршрута",
+            "points": path
+        });
+        this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible"});
+        console.log(userRoutes['routes']);
+    }
+
+    deleteRoute() {
+        userRoutes['routes'].pop();
+        this.setState({saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"});
+        console.log(userRoutes['routes']);
+    }
+
 	render() {
 		return(
 		<Panel className="panel">
-		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="mainMap"/>}>
+		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="home"/>}>
 		        <PanelHeaderContent
 		            aside={
 		                <Icon24ChevronDown
@@ -349,6 +385,8 @@ class Route extends React.Component {
               </PanelHeaderContext>
             <div className="mainGroup">
                 <div id="routeMap" className="map-container"></div>
+                <Avatar onClick={this.saveRoute} id="saveBtn" style={{ background: 'var(--background_content)', visibility: this.state.saveBtnVisibility }} size={32} shadow={false}><Icon28FavoriteOutline /></Avatar>
+                <Avatar onClick={this.deleteRoute} id="deleteBtn" style={{ background: 'var(--background_content)', visibility: this.state.deleteBtnVisibility }}  size={32} shadow={false}><Icon28Favorite fill="#ffdb4d" /></Avatar>
             </div>
 		</Panel>)
 	}

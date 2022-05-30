@@ -61,6 +61,7 @@ const App = () => {
 							} else {
 								setActivePanel(ROUTES.INTRO);
 							}
+							// setActivePanel(ROUTES.INTRO);
 							break;
 						default:
 							break;
@@ -88,21 +89,28 @@ const App = () => {
 		setActivePanel(e.currentTarget.dataset.to);
 	};
 
+	const goToPanel = (e) => {
+		setActivePanel(e.currentTarget.dataset.to);
+	}
+
 	const selectCity = () => {
 		setActivePanel(ROUTES.SELECTCITY);
 	}
 
-	const closeIntro = () => {
-		setActivePanel(ROUTES.CHECKCITY);
-	}
-
 	const confirmCity = async function (e, city) {
+		console.log("confirm");
 		try {
 			await bridge.send('VKWebAppStorageSet', {
 				key: STORAGE_KEYS.STATUS,
 				value: JSON.stringify({
 					citySelected: true,
 					userCity: city
+				})
+			});
+			await bridge.send('VKWebAppStorageSet', {
+				key: 'userRoutes',
+				value: JSON.stringify({
+					"routes": []
 				})
 			});
 			setCity(city);
@@ -125,12 +133,12 @@ const App = () => {
 			<AppRoot>
 				<View activePanel={activePanel} popout={popout}>
 					<Blank id={ROUTES.BLANK} />
-					<Intro id={ROUTES.INTRO} closeIntro={closeIntro} />
+					<Intro id={ROUTES.INTRO} go={goToPanel} />
 					<SelectCity id={ROUTES.SELECTCITY} confirmCity={confirmCity} />
 					<CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} selectCity={selectCity} />
-					<Home id={ROUTES.HOME} go={go} places={chosenPlaces} city={userCity} />
+					<Home id={ROUTES.HOME} go={go} goToPanel={goToPanel} places={chosenPlaces} city={userCity} />
 					<Route id={ROUTES.ROUTE} places={chosenPlaces} go={go} />
-					<SavedRoutes id={ROUTES.SAVEDROUTES} />
+					<SavedRoutes id={ROUTES.SAVEDROUTES} go={go} />
 				</View>
 			</AppRoot>
 		</AdaptivityProvider>

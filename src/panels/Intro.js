@@ -29,7 +29,7 @@ class Intro extends React.Component {
                             <Avatar className="AvatarIcon" style={{ background: 'var(--background_content)' }} size={28} shadow={false}><Icon28LocationOutline fill="var(--accent)" /></Avatar>
                             <div>Выбирай тип маршрута и планируй поездки или прогулки по городу</div>
                         </div>
-                        <Button size="l" onClick={this.props.closeIntro}>
+                        <Button size="l" onClick={(e) => this.props.go(e)} data-to="checkCity">
                             Ок, все понятно
                         </Button>
                     </Div>

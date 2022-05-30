@@ -146,4 +146,31 @@
     height: 1000px;
 }
 
+#savedBtn {
+    float: right;
+}
+
+#savedBtn:hover {
+    cursor: pointer;
+}
+
+#saveBtn {
+    position: absolute;
+    right: 0px;
+    margin: 8px;
+}
+
+#saveBtn:hover {
+    cursor: pointer;
+}
+
+#deleteBtn {
+    position: absolute;
+    right: 0px;
+    margin: 8px;
+}
+
+#deleteBtn:hover {
+    cursor: pointer;
+}
 

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Panel, PanelHeader, PanelHeaderContent, PanelHeaderContext, List, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderButton, PanelHeaderContent, PanelHeaderContext, List, Div, Button, FormItem, Chip, Alert, SplitLayout, SplitCol, Avatar } from '@vkontakte/vkui';
 import './style.css';
 import citiesJSON from './cities.json';
 import { Icon24ChevronDown } from '@vkontakte/icons';
+import { Icon28FavoriteOutline } from '@vkontakte/icons';
+import { Icon28Favorite } from '@vkontakte/icons';
 
 let placemarksMap = new Map();
 let searchMap = null;
@@ -319,6 +321,7 @@ class Home extends React.Component {
 	constructor(props) {
 		super(props);
 		this.go = this.props.go;
+        this.goToPanel = this.props.goToPanel;
 		this.clearPlaces = this.clearPlaces.bind(this);
 		if (this.props.places.size > 0) {
             this.props.places.delete("Вы здесь");
@@ -387,8 +390,9 @@ class Home extends React.Component {
                 <div className="mainGroup">
                     <div className="topPanel">
                     <Div>
-                        <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="resultRoute" disabled={this.state.btnDisabled}>Построить маршрут</Button>
+                        <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="route" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
+                        <Avatar onClick={(e) => this.goToPanel(e)} data-to="savedRoutes" id="savedBtn" style={{ background: 'var(--background_content)' }} size={28} shadow={false}><Icon28Favorite fill="#ffdb4d" /></Avatar>
                     </Div>
                     </div>
                     <div className="mainMap">

@@ -23,10 +23,10 @@ class CheckCity extends React.Component {
     }
 
 	render() {
-        if (this.state.user.city.title === "") {
-            this.props.selectCity();
-        }
 	    if (this.state.isLoaded) {
+            if (this.state.user.city.title === "") {
+                this.props.selectCity();
+            }
 	        return (
                 <Panel className="panel" centered="true">
                     <Div className='Intro'>
