@@ -121,7 +121,7 @@ const Points = ({ points }) => {
     );
 }
 
-class ResultRoute extends React.Component {
+class Route extends React.Component {
 	constructor(props) {
         super(props);
 		this.init = this.init.bind(this);
@@ -354,4 +354,4 @@ class ResultRoute extends React.Component {
 	}
 }
 
-export default ResultRoute;
+export default Route;

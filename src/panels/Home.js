@@ -315,7 +315,7 @@ class SearchMap extends React.Component {
     }
 }
 
-class MainMap extends React.Component {
+class Home extends React.Component {
 	constructor(props) {
 		super(props);
 		this.go = this.props.go;
@@ -400,4 +400,4 @@ class MainMap extends React.Component {
 	}
 }
 
-export default MainMap;
+export default Home;

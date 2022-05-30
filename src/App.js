@@ -4,20 +4,22 @@ import { View, ScreenSpinner, AdaptivityProvider, AppRoot, Snackbar, Avatar } fr
 import '@vkontakte/vkui/dist/vkui.css';
 import { Icon24Error } from '@vkontakte/icons';
 
-import MainMap from './panels/MainMap';
-import ResultRoute from './panels/ResultRoute';
-import SelectCity from './panels/SelectCity';
-import CheckCity from './panels/CheckCity';
 import Blank from './panels/Blank';
 import Intro from './panels/Intro';
+import CheckCity from './panels/CheckCity';
+import SelectCity from './panels/SelectCity';
+import Home from './panels/Home';
+import Route from './panels/Route';
+import SavedRoutes from './panels/SavedRoutes';
 
 const ROUTES = {
-	MAINMAP: 'mainMap',
-	RESULTROUTE: 'resultRoute',
+	BLANK: 'blank',
+	INTRO: 'intro',
 	CHECKCITY: 'checkCity',
 	SELECTCITY: 'selectCity',
-	BLANK: 'blank',
-	INTRO: 'intro'
+	HOME: 'home',
+	ROUTE: 'route',
+	SAVEDROUTES: 'savedRoutes'
 }
 
 const STORAGE_KEYS = {
@@ -53,7 +55,7 @@ const App = () => {
 					switch (key) {
 						case STORAGE_KEYS.STATUS:
 							if (data[key].citySelected) {
-								setActivePanel(ROUTES.MAINMAP);
+								setActivePanel(ROUTES.HOME);
 								setUserSelectedCity(true);
 								setCity(data[key].userCity);
 							} else {
@@ -86,16 +88,15 @@ const App = () => {
 		setActivePanel(e.currentTarget.dataset.to);
 	};
 
-	const selectCity = (e) => {
+	const selectCity = () => {
 		setActivePanel(ROUTES.SELECTCITY);
 	}
 
-	const closeIntro = (e) => {
+	const closeIntro = () => {
 		setActivePanel(ROUTES.CHECKCITY);
 	}
 
 	const confirmCity = async function (e, city) {
-		console.log(city);
 		try {
 			await bridge.send('VKWebAppStorageSet', {
 				key: STORAGE_KEYS.STATUS,
@@ -105,7 +106,7 @@ const App = () => {
 				})
 			});
 			setCity(city);
-			setActivePanel(ROUTES.MAINMAP);
+			setActivePanel(ROUTES.HOME);
 		} catch(error) {
 			setSnackbar(<Snackbar
 				layout='vertical'
@@ -127,8 +128,9 @@ const App = () => {
 					<Intro id={ROUTES.INTRO} closeIntro={closeIntro} />
 					<SelectCity id={ROUTES.SELECTCITY} confirmCity={confirmCity} />
 					<CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} selectCity={selectCity} />
-					<MainMap id={ROUTES.MAINMAP} go={go} places={chosenPlaces} city={userCity} />
-					<ResultRoute id={ROUTES.RESULTROUTE} places={chosenPlaces} go={go} />
+					<Home id={ROUTES.HOME} go={go} places={chosenPlaces} city={userCity} />
+					<Route id={ROUTES.ROUTE} places={chosenPlaces} go={go} />
+					<SavedRoutes id={ROUTES.SAVEDROUTES} />
 				</View>
 			</AppRoot>
 		</AdaptivityProvider>
