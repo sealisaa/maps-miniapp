@@ -339,18 +339,30 @@ class Route extends React.Component {
     }
 
     saveRoute() {
+        async function sendData() {
+            await bridge.send('VKWebAppStorageSet', {
+                key: 'userRoutes',
+                value: JSON.stringify(userRoutes)
+            });
+        }
         userRoutes['routes'].push({
             "name": "имя маршрута",
             "points": path
         });
+        sendData();
         this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible"});
-        console.log(userRoutes['routes']);
     }
 
     deleteRoute() {
+        async function sendData() {
+            await bridge.send('VKWebAppStorageSet', {
+                key: 'userRoutes',
+                value: JSON.stringify(userRoutes)
+            });
+        }
         userRoutes['routes'].pop();
+        sendData();
         this.setState({saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"});
-        console.log(userRoutes['routes']);
     }
 
 	render() {
