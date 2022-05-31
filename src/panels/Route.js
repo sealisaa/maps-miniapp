@@ -1,5 +1,5 @@
 import React from 'react';
-import { Div, List, Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, Avatar } from '@vkontakte/vkui';
+import { Div, List, Panel, PanelHeader, PanelHeaderBack, PanelHeaderContent, PanelHeaderContext, Avatar, SplitLayout, SplitCol, ModalRoot, ModalCard, Textarea, Button } from '@vkontakte/vkui';
 import { Icon24ChevronDown, Icon28Favorite } from '@vkontakte/icons';
 import { Icon28FavoriteOutline } from '@vkontakte/icons';
 import './style.css';
@@ -10,6 +10,7 @@ let arrNames;
 let arrCoords;
 let path = [];
 let pathStr = [];
+let points = [];
 let pathLength;
 let sumPathLength = 0;
 let visited = [];
@@ -92,6 +93,7 @@ function getDistances() {
     }
 }
 
+
 const Points = ({ points }) => {
     const ABC = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
     let i = 0;
@@ -138,6 +140,7 @@ class Route extends React.Component {
         this.deleteRoute = this.deleteRoute.bind(this);
         this.toggleContext = this.toggleContext.bind(this);
         this.getUserRoutes = this.getUserRoutes.bind(this);
+        this.modalBack = this.modalBack.bind(this);
         this.getUserRoutes();
 		this.go = this.props.go;
         places = this.props.places;
@@ -155,9 +158,17 @@ class Route extends React.Component {
             path = arrCoords;
             pathStr = arrNames;
         }
-        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: false, saved: false, saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"};
+        points = [];
+        for (let i = 0; i < path.length; i++) {
+            points.push({name: pathStr[i], coords: path[i]});
+        }
+        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: false, saved: false, saveBtnVisibility: "visible", deleteBtnVisibility: "hidden", activeModal: null};
         ymaps.ready(this.init);
 	}
+
+    modalBack() {
+        this.setState({activeModal: null});
+    };
 
     getUserRoutes() {
         async function fetchData() {
@@ -330,6 +341,10 @@ class Route extends React.Component {
                 pathStr = [arrNames[1], arrNames[0]];
             }
         }
+        points = [];
+        for (let i = 0; i < path.length; i++) {
+            points.push({name: pathStr[i], coords: path[i]});
+        }
         this.setState({places: places, path: path, pathStr: pathStr, startPoint: startPoint});
         route.model.setReferencePoints(path);
     }
@@ -339,18 +354,21 @@ class Route extends React.Component {
     }
 
     saveRoute() {
-        async function sendData() {
-            await bridge.send('VKWebAppStorageSet', {
-                key: 'userRoutes',
-                value: JSON.stringify(userRoutes)
+        let routeName = document.getElementById("routeNameField").value
+        if (routeName !== "") {
+            async function sendData() {
+                await bridge.send('VKWebAppStorageSet', {
+                    key: 'userRoutes',
+                    value: JSON.stringify(userRoutes)
+                });
+            }
+            userRoutes['routes'].push({
+                "name": document.getElementById("routeNameField").value,
+                "points": points
             });
+            sendData();
+            this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible", activeModal: null});
         }
-        userRoutes['routes'].push({
-            "name": "имя маршрута",
-            "points": path
-        });
-        sendData();
-        this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible"});
     }
 
     deleteRoute() {
@@ -367,40 +385,60 @@ class Route extends React.Component {
 
 	render() {
 		return(
-		<Panel className="panel">
-		    <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="home"/>}>
-		        <PanelHeaderContent
-		            aside={
-		                <Icon24ChevronDown
-		                    style={{
-		                        transform: `rotate(${
-		                        this.state.contextOpened ? "180deg" : "0"
-		                        })`,
-		                        margin: "10px",
-		                    }}
-                        />
-                    }
-                    onClick={this.toggleContext}>
-                    Детали маршрута
-                </PanelHeaderContent>
-            </PanelHeader>
-            <PanelHeaderContext opened={this.state.contextOpened} onClose={this.toggleContext}>
-                <List>
-                    <Points points={this.state.pathStr}></Points>
-                    <Div>
-                        <div className="flex-container">
-                            <p className="black"><b>{this.state.duration}</b></p>
-                            <p className="grey"><b>{this.state.distance}</b></p>
+            <SplitLayout modal={
+                <ModalRoot activeModal={this.state.activeModal} onClose={this.modalBack}>
+                    <ModalCard
+                        id='routeName'
+                        onClose={() => this.setState({activeModal: null})}
+                        header="Введите название маршрута"
+                        actions={
+                            <Button size="l" mode="primary" onClick={(e) => this.saveRoute(e)}>
+                                Сохранить
+                            </Button>
+                        }
+                    >
+                        <Textarea required={true} id="routeNameField" />
+                    </ModalCard>
+                </ModalRoot>
+            }>
+                <SplitCol>
+                    <Panel className="panel">
+                        <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="home"/>}>
+                            <PanelHeaderContent
+                                aside={
+                                    <Icon24ChevronDown
+                                        style={{
+                                            transform: `rotate(${
+                                                this.state.contextOpened ? "180deg" : "0"
+                                            })`,
+                                            margin: "10px",
+                                        }}
+                                    />
+                                }
+                                onClick={this.toggleContext}>
+                                Детали маршрута
+                            </PanelHeaderContent>
+                        </PanelHeader>
+                        <PanelHeaderContext opened={this.state.contextOpened} onClose={this.toggleContext}>
+                            <List>
+                                <Points points={this.state.pathStr}></Points>
+                                <Div>
+                                    <div className="flex-container">
+                                        <p className="black"><b>{this.state.duration}</b></p>
+                                        <p className="grey"><b>{this.state.distance}</b></p>
+                                    </div>
+                                </Div>
+                            </List>
+                        </PanelHeaderContext>
+                        <div className="mainGroup">
+                            <div id="routeMap" className="map-container"></div>
+                            <Avatar onClick={() => this.setState({activeModal: 'routeName'})} id="saveBtn" style={{ background: 'var(--background_content)', visibility: this.state.saveBtnVisibility }} size={32} shadow={false}><Icon28FavoriteOutline /></Avatar>
+                            <Avatar onClick={this.deleteRoute} id="deleteBtn" style={{ background: 'var(--background_content)', visibility: this.state.deleteBtnVisibility }}  size={32} shadow={false}><Icon28Favorite fill="#ffdb4d" /></Avatar>
                         </div>
-                    </Div>
-                </List>
-              </PanelHeaderContext>
-            <div className="mainGroup">
-                <div id="routeMap" className="map-container"></div>
-                <Avatar onClick={this.saveRoute} id="saveBtn" style={{ background: 'var(--background_content)', visibility: this.state.saveBtnVisibility }} size={32} shadow={false}><Icon28FavoriteOutline /></Avatar>
-                <Avatar onClick={this.deleteRoute} id="deleteBtn" style={{ background: 'var(--background_content)', visibility: this.state.deleteBtnVisibility }}  size={32} shadow={false}><Icon28Favorite fill="#ffdb4d" /></Avatar>
-            </div>
-		</Panel>)
+                    </Panel>
+                </SplitCol>
+            </SplitLayout>
+		)
 	}
 }
 

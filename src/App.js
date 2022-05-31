@@ -54,14 +54,14 @@ const App = () => {
 					data[key] = value ? JSON.parse(value) : {};
 					switch (key) {
 						case STORAGE_KEYS.STATUS:
-							if (data[key].citySelected) {
-								setActivePanel(ROUTES.HOME);
-								setUserSelectedCity(true);
-								setCity(data[key].userCity);
-							} else {
-								setActivePanel(ROUTES.INTRO);
-							}
-							// setActivePanel(ROUTES.INTRO);
+							// if (data[key].citySelected) {
+							// 	setActivePanel(ROUTES.HOME);
+							// 	setUserSelectedCity(true);
+							// 	setCity(data[key].userCity);
+							// } else {
+							// 	setActivePanel(ROUTES.INTRO);
+							// }
+							setActivePanel(ROUTES.INTRO);
 							break;
 						default:
 							break;
@@ -95,6 +95,14 @@ const App = () => {
 
 	const selectCity = () => {
 		setActivePanel(ROUTES.SELECTCITY);
+	}
+
+	const showSavedRoute = (e, points) => {
+		chosenPlaces = new Map();
+		for (let i = 0; i < points.length; i++) {
+			chosenPlaces.set(points[i].name, points[i].coords);
+		}
+		setActivePanel(ROUTES.ROUTE);
 	}
 
 	const confirmCity = async function (e, city) {
@@ -138,7 +146,7 @@ const App = () => {
 					<CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} selectCity={selectCity} />
 					<Home id={ROUTES.HOME} go={go} goToPanel={goToPanel} places={chosenPlaces} city={userCity} />
 					<Route id={ROUTES.ROUTE} places={chosenPlaces} go={go} />
-					<SavedRoutes id={ROUTES.SAVEDROUTES} go={go} />
+					<SavedRoutes id={ROUTES.SAVEDROUTES} go={go} showSavedRoute={showSavedRoute} />
 				</View>
 			</AppRoot>
 		</AdaptivityProvider>

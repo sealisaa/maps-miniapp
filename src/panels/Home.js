@@ -392,7 +392,7 @@ class Home extends React.Component {
                     <Div>
                         <Button size="s" mode="secondary" className="btn" onClick={(e) => this.go(e, this.state.places)} data-to="route" disabled={this.state.btnDisabled}>Построить маршрут</Button>
                         <Button size="s" mode="secondary" className="btn" onClick={this.clearPlaces} style={{visibility: this.state.btnVisibility}}>Сбросить</Button>
-                        <Avatar onClick={(e) => this.goToPanel(e)} data-to="savedRoutes" id="savedBtn" style={{ background: 'var(--background_content)' }} size={28} shadow={false}><Icon28Favorite fill="#ffdb4d" /></Avatar>
+                        <Avatar onClick={(e) => this.goToPanel(e)} data-to="savedRoutes" id="savedBtn" style={{ background: 'var(--background_content)' }} size={28} shadow={false}><Icon28FavoriteOutline fill="var(--accent)" /></Avatar>
                     </Div>
                     </div>
                     <div className="mainMap">

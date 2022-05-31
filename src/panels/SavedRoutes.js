@@ -3,8 +3,6 @@ import {Panel, PanelHeader, PanelHeaderBack, Div, SimpleCell, Chip} from '@vkont
 import './style.css';
 import bridge from "@vkontakte/vk-bridge";
 
-let userRoutes;
-
 const STORAGE_KEYS = {
     ROUTES: 'userRoutes',
 }
@@ -13,6 +11,7 @@ class RouteList extends React.Component {
     constructor(props) {
         super(props);
         this.routes = this.props.routes;
+        this.showSavedRoute = this.props.showSavedRoute;
     }
 
     render() {
@@ -27,7 +26,7 @@ class RouteList extends React.Component {
                 <Div>
                     {this.routes.map((route) => {
                         return (
-                            <SimpleCell key={route['name']}>{route['name']}</SimpleCell>
+                            <SimpleCell onClick={(e) => this.showSavedRoute(e, route['points'])} data-to={"route"} key={route['name']}>{route['name']}</SimpleCell>
                         )
                     })}
                 </Div>
@@ -65,7 +64,7 @@ class SavedRoutes extends React.Component {
                     <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, new Map())} data-to="home"/>}>
                         Сохранённые маршруты
                     </PanelHeader>
-                    <RouteList routes={this.state.routes}></RouteList>
+                    <RouteList routes={this.state.routes} showSavedRoute={this.props.showSavedRoute}></RouteList>
                 </Panel>
             )
         }
