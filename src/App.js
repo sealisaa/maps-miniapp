@@ -56,14 +56,13 @@ const App = () => {
 					data[key] = value ? JSON.parse(value) : {};
 					switch (key) {
 						case STORAGE_KEYS.STATUS:
-							// if (data[key].citySelected) {
-							// 	setActivePanel(ROUTES.HOME);
-							// 	setUserSelectedCity(true);
-							// 	setCity(data[key].userCity);
-							// } else {
-							// 	setActivePanel(ROUTES.INTRO);
-							// }
-							setActivePanel(ROUTES.INTRO);
+							if (data[key].citySelected) {
+								setActivePanel(ROUTES.HOME);
+								setUserSelectedCity(true);
+								setCity(data[key].userCity);
+							} else {
+								setActivePanel(ROUTES.INTRO);
+							}
 							break;
 						default:
 							break;

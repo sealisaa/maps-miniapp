@@ -187,7 +187,17 @@ class Route extends React.Component {
             const storageData = await bridge.send('VKWebAppStorageGet', {
                 keys: Object.values(STORAGE_KEYS)
             });
-            userRoutes = JSON.parse(storageData.keys[0].value);
+            if (storageData === "") {
+                await bridge.send('VKWebAppStorageSet', {
+                    key: 'userRoutes',
+                    value: JSON.stringify({
+                        "routes": []
+                    })
+                });
+                userRoutes = [];
+            } else {
+                userRoutes = JSON.parse(storageData.keys[0].value);
+            }
         }
         fetchData();
     }

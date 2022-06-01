@@ -15,11 +15,9 @@ class RouteList extends React.Component {
     }
 
     render() {
-        if (this.routes.size === 0) {
+        if (this.routes.length === 0) {
             return (
-                <Div>
-                    <p>Вы не сохранили ни одного маршрута</p>
-                </Div>
+                <Div className="grey">Вы не сохранили ни одного маршрута</Div>
             )
         } else {
             return (
