@@ -20,6 +20,11 @@ let places;
 let routeMap = null;
 let route = null;
 let userRoutes = [];
+let fromSaved = false;
+let routeType = 'auto';
+let autoSelected = true;
+let masstransitSelected = false;
+let pedestrianSelected = false;
 
 const STORAGE_KEYS = {
     ROUTES: 'userRoutes',
@@ -141,28 +146,35 @@ class Route extends React.Component {
         this.toggleContext = this.toggleContext.bind(this);
         this.getUserRoutes = this.getUserRoutes.bind(this);
         this.modalBack = this.modalBack.bind(this);
+        this.allowSaving = this.allowSaving.bind(this);
         this.getUserRoutes();
 		this.go = this.props.go;
         places = this.props.places;
         arrNames = Array.from(places.keys());
         arrCoords = Array.from(places.values());
-        if (places.size > 2) {
-            getDistances(places);
-            pathLength = sumPathLength;
-            GreedyAlgorithmStart(null);
-            for (let i = 0; i < path.length; i++) {
-                pathStr[i] = arrNames[path[i]];
-                path[i] = arrCoords[path[i]];
-            }
+        if (this.props.routeName != null) {
+            fromSaved = true;
+            routeType = this.props.routeType;
+            this.state = {places: places, path: arrCoords, pathStr: arrNames, changed: false, distance: "", duration: "", contextOpened: false, saveBtnVisibility: "hidden", deleteBtnVisibility: "visible", activeModal: null};
         } else {
-            path = arrCoords;
-            pathStr = arrNames;
+            if (places.size > 2) {
+                getDistances(places);
+                pathLength = sumPathLength;
+                GreedyAlgorithmStart(null);
+                for (let i = 0; i < path.length; i++) {
+                    pathStr[i] = arrNames[path[i]];
+                    path[i] = arrCoords[path[i]];
+                }
+            } else {
+                path = arrCoords;
+                pathStr = arrNames;
+            }
+            points = [];
+            for (let i = 0; i < path.length; i++) {
+                points.push({name: pathStr[i], coords: path[i]});
+            }
+            this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: false, saved: false, saveBtnVisibility: "visible", deleteBtnVisibility: "hidden", activeModal: null, message: "", type: 'auto'};
         }
-        points = [];
-        for (let i = 0; i < path.length; i++) {
-            points.push({name: pathStr[i], coords: path[i]});
-        }
-        this.state = {places: places, path: path, pathStr: pathStr, changed: false, distance: "", duration: "", contextOpened: false, saved: false, saveBtnVisibility: "visible", deleteBtnVisibility: "hidden", activeModal: null};
         ymaps.ready(this.init);
 	}
 
@@ -193,10 +205,21 @@ class Route extends React.Component {
             buttonMaxWidth: 300
         });
 
+        if (routeType === 'masstransit') {
+            autoSelected = false;
+            masstransitSelected = true;
+            pedestrianSelected = false;
+        }
+        if (routeType === 'pedestrian') {
+            autoSelected = false;
+            masstransitSelected = false;
+            pedestrianSelected = true;
+        }
+
         route = new ymaps.multiRouter.MultiRoute({
-            referencePoints: path,
+            referencePoints: this.state.path,
             params: {
-                routingMode: 'auto'
+                routingMode: routeType
             }
         }, {
             boundsAutoApply: true
@@ -209,9 +232,9 @@ class Route extends React.Component {
                 content: 'Как добраться'
             },
             items: [
-                new ymaps.control.ListBoxItem({data: {content: "На автомобиле"}, state: {selected: true}}),
-                new ymaps.control.ListBoxItem({data: {content: "Общественным транспортом"}}),
-                new ymaps.control.ListBoxItem({data: {content: "Пешком"}})
+                new ymaps.control.ListBoxItem({data: {content: "На автомобиле"}, state: {selected: autoSelected}}),
+                new ymaps.control.ListBoxItem({data: {content: "Общественным транспортом"}, state: {selected: masstransitSelected}}),
+                new ymaps.control.ListBoxItem({data: {content: "Пешком"}, state: {selected: pedestrianSelected}})
             ],
             options: {
                 itemSelectOnClick: false
@@ -252,6 +275,7 @@ class Route extends React.Component {
 
         let geolocation = ymaps.geolocation;
         let buildRoute = this.buildRoute;
+        let allowSaving = this.allowSaving;
 
         function changeStartPoint(startPoint) {
             if (startPoint === "Мое местоположение") {
@@ -259,6 +283,7 @@ class Route extends React.Component {
             } else {
                 places.delete("Вы здесь");
                 buildRoute(startPoint);
+                allowSaving();
             }
         }
 
@@ -290,10 +315,12 @@ class Route extends React.Component {
             pedestrianRouteItem.deselect();
             targetItem.select();
             routeTypeSelector.collapse();
+            routeType = routingMode;
             let activeRoute = route.getActiveRoute();
             let distance = activeRoute.properties.get("distance").text;
             let duration = activeRoute.properties.get("duration").text;
             update(distance, duration);
+            allowSaving();
         }
 
         let setDistanceAndDuration = this.setDistanceAndDuration;
@@ -353,22 +380,39 @@ class Route extends React.Component {
         this.setState({distance: distance, duration: duration});
     }
 
+    allowSaving() {
+        this.setState({saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"});
+    }
+
     saveRoute() {
         let routeName = document.getElementById("routeNameField").value
-        if (routeName !== "") {
-            async function sendData() {
-                await bridge.send('VKWebAppStorageSet', {
-                    key: 'userRoutes',
-                    value: JSON.stringify(userRoutes)
-                });
+        let isNameUnique = true;
+        for (let i = 0; i < userRoutes.routes.length; i++) {
+            if (userRoutes.routes[i].name === routeName) {
+                isNameUnique = false;
             }
-            userRoutes['routes'].push({
-                "name": document.getElementById("routeNameField").value,
-                "points": points
-            });
-            sendData();
-            this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible", activeModal: null});
         }
+        if (routeName === "") {
+            this.setState({message: "Название не может быть пустым"});
+            return;
+        }
+        if (!isNameUnique) {
+            this.setState({message: "Маршрут с таким названием уже существует"});
+            return;
+        }
+        async function sendData() {
+            await bridge.send('VKWebAppStorageSet', {
+                key: 'userRoutes',
+                value: JSON.stringify(userRoutes)
+            });
+        }
+        userRoutes['routes'].push({
+            "name": document.getElementById("routeNameField").value,
+            "points": points,
+            "type": routeType
+        });
+        sendData();
+        this.setState({saveBtnVisibility: "hidden", deleteBtnVisibility: "visible", activeModal: null, message: ""});
     }
 
     deleteRoute() {
@@ -378,7 +422,15 @@ class Route extends React.Component {
                 value: JSON.stringify(userRoutes)
             });
         }
-        userRoutes['routes'].pop();
+        if (this.props.routeName != null) {
+            for (let i = 0; i < userRoutes.routes.length; i++) {
+                if (userRoutes.routes[i].name === this.props.routeName) {
+                    userRoutes['routes'].splice(i, 1);
+                }
+            }
+        } else {
+            userRoutes['routes'].pop();
+        }
         sendData();
         this.setState({saveBtnVisibility: "visible", deleteBtnVisibility: "hidden"});
     }
@@ -398,12 +450,13 @@ class Route extends React.Component {
                         }
                     >
                         <Textarea required={true} id="routeNameField" />
+                        <div className="grey">{this.state.message}</div>
                     </ModalCard>
                 </ModalRoot>
             }>
                 <SplitCol>
                     <Panel className="panel">
-                        <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to="home"/>}>
+                        <PanelHeader left={<PanelHeaderBack onClick = {(e) => this.go(e, this.state.places)} data-to={fromSaved? 'savedRoutes' : 'home'}/>}>
                             <PanelHeaderContent
                                 aside={
                                     <Icon24ChevronDown

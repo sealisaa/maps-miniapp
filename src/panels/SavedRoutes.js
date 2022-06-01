@@ -26,7 +26,7 @@ class RouteList extends React.Component {
                 <Div>
                     {this.routes.map((route) => {
                         return (
-                            <SimpleCell onClick={(e) => this.showSavedRoute(e, route['points'])} data-to={"route"} key={route['name']}>{route['name']}</SimpleCell>
+                            <SimpleCell onClick={(e) => this.showSavedRoute(e, route)} data-to={"route"} key={route['name']}>{route['name']}</SimpleCell>
                         )
                     })}
                 </Div>

@@ -27,6 +27,8 @@ const STORAGE_KEYS = {
 }
 
 let chosenPlaces = new Map();
+let routeName = null;
+let routeType = 'auto';
 
 const App = () => {
 	const [scheme, setScheme] = useState('bright_light');
@@ -85,7 +87,12 @@ const App = () => {
 	}, []);
 
 	const go = (e, places) => {
-		chosenPlaces = places;
+		if (routeName != null) {
+			chosenPlaces = new Map();
+		} else {
+			chosenPlaces = places;
+		}
+		routeName = null;
 		setActivePanel(e.currentTarget.dataset.to);
 	};
 
@@ -97,16 +104,17 @@ const App = () => {
 		setActivePanel(ROUTES.SELECTCITY);
 	}
 
-	const showSavedRoute = (e, points) => {
+	const showSavedRoute = (e, route) => {
 		chosenPlaces = new Map();
-		for (let i = 0; i < points.length; i++) {
-			chosenPlaces.set(points[i].name, points[i].coords);
+		for (let i = 0; i < route.points.length; i++) {
+			chosenPlaces.set(route.points[i].name, route.points[i].coords);
 		}
+		routeName = route.name;
+		routeType = route.type;
 		setActivePanel(ROUTES.ROUTE);
 	}
 
 	const confirmCity = async function (e, city) {
-		console.log("confirm");
 		try {
 			await bridge.send('VKWebAppStorageSet', {
 				key: STORAGE_KEYS.STATUS,
@@ -145,7 +153,7 @@ const App = () => {
 					<SelectCity id={ROUTES.SELECTCITY} confirmCity={confirmCity} />
 					<CheckCity id={ROUTES.CHECKCITY} confirmCity={confirmCity} selectCity={selectCity} />
 					<Home id={ROUTES.HOME} go={go} goToPanel={goToPanel} places={chosenPlaces} city={userCity} />
-					<Route id={ROUTES.ROUTE} places={chosenPlaces} go={go} />
+					<Route id={ROUTES.ROUTE} places={chosenPlaces} go={go} routeName={routeName} routeType={routeType} />
 					<SavedRoutes id={ROUTES.SAVEDROUTES} go={go} showSavedRoute={showSavedRoute} />
 				</View>
 			</AppRoot>
